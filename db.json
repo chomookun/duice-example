@@ -1,7 +1,7 @@
 {
   "users": [
     {
-      "id": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "userId": "8d95f413896e4afcb81fd7ac8ef2915f",
       "username": "admin@oopscraft.org",
       "name": "Admin",
       "status": "ACTIVE",
@@ -11,7 +11,7 @@
       "joinAt": "2024-11-22T18:07:53+09:00"
     },
     {
-      "id": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "userId": "8d95f313896e4afcb81fd7ac8ef8915f",
       "username": "apple@oopscraft.org",
       "name": "Apple",
       "status": "ACTIVE",
@@ -21,7 +21,7 @@
       "joinAt": "2024-11-22T18:07:53+09:00"
     },
     {
-      "id": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "userId": "8d95f413896e44fcb81fd7ac8ef8915f",
       "username": "orange@oopscraft.org",
       "name": "Orange",
       "status": "ACTIVE",
@@ -31,7 +31,7 @@
       "joinAt": "2024-11-22T18:07:53+09:00"
     },
     {
-      "id": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "userId": "8d95f413896a4afcb81fd7ac8ef8915f",
       "username": "melon@oopscraft.org",
       "name": "Melon",
       "status": "ACTIVE",
@@ -41,7 +41,7 @@
       "joinAt": "2024-11-22T18:07:53+09:00"
     },
     {
-      "id": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "userId": "8d95f413896e4dfcb81fd7ac8ef8915f",
       "username": "monkey@oopscraft.org",
       "name": "Monkey",
       "status": "ACTIVE",
@@ -51,7 +51,7 @@
       "joinAt": "2024-11-22T18:07:53+09:00"
     },
     {
-      "id": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "userId": "8d95f413896e4afcb81f27ac8ef8915f",
       "username": "banana@oopscraft.org",
       "name": "Banana",
       "status": "ACTIVE",
@@ -61,7 +61,7 @@
       "joinAt": "2024-11-22T18:07:53+09:00"
     },
     {
-      "id": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "userId": "df45f413896e4afcb81fd7ac8ef8915f",
       "username": "james@oopscraft.org",
       "name": "James",
       "status": "ACTIVE",
@@ -71,7 +71,7 @@
       "joinAt": "2024-11-22T18:07:53+09:00"
     },
     {
-      "id": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "userId": "a195f413896e4afcb81fd7ac8ef8915f",
       "username": "snake@oopscraft.org",
       "name": "Snake",
       "status": "LOCKED",
