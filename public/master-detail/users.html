@@ -32,6 +32,12 @@
         .detail {
             grid-area: detail;
         }
+        .icon--32 {
+            height: 32px;
+        }
+        .icon--64 {
+            height: 64px;
+        }
     </style>
     <script>
         const _apiUrl = 'https://my-json-server.typicode.com/oopscraft/duice-example';
@@ -68,18 +74,25 @@
         function getUser(id) {
             let url = new URL(`${_apiUrl}/users/${id}`);
             fetch(url)
-            .then(response => response.json)
+            .then(response => response.json())
             .then(data => {
                 duice.ObjectProxy.assign(user, data);
             });
         }
 
         function createUser() {
-
+            duice.ObjectProxy.clear();
+            duice.ObjectProxy.assign(user, {
+                _new: true
+            });
         }
 
         function saveUser() {
+            if (user._new) {
 
+            } else {
+
+            }
         }
 
         function deleteUser() {
@@ -140,7 +153,7 @@
                     data-duice-property="count"
                     class="text-center"></td>
                 <td>
-                    <img src="" alt=""
+                    <img src="/static/image/icon-photo.png" alt="" class="icon--32"
                          data-duice-bind="user"
                          data-duice-property="photo"/>
                     <span data-duice-bind="user"
@@ -175,7 +188,7 @@
             <div class="row py-2">
                 <div class="col">
                     <label class="w-100">
-                        Username
+                        <span>Username</span>
                         <input type="email" class="form-control"
                                data-duice-bind="user"
                                data-duice-property="username">
@@ -183,7 +196,7 @@
                 </div>
                 <div class="col">
                     <label class="w-100">
-                        Name
+                        <span>Name</span>
                         <input type="text" class="form-control"
                                data-duice-bind="user"
                                data-duice-property="name">
@@ -193,22 +206,33 @@
             <div class="row py-2">
                 <div class="col">
                     <label class="w-100">
-                        Username
-                        <input type="email" class="form-control">
+                        <span>Status</span>
+                        <select class="form-select"
+                                data-duice-bind="user"
+                                data-duice-property="status">
+                            <option selected>Status...</option>
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="LOCKED">LOCKED</option>
+                        </select>
                     </label>
                 </div>
                 <div class="col align-self-end">
                     <label class="w-100">
-                        <input type="checkbox" class="form-checkbox-input">
-                        Admin
+                        <input type="checkbox" class="form-checkbox-input"
+                               data-duice-bind="user"
+                               data-duice-property="admin">
+                        <span>Admin</span>
                     </label>
                 </div>
             </div>
             <div class="row py-2">
                 <div class="col">
                     <label class="w-100">
-                        Photo<br/>
-                        <img alt="" style="width:64px; height:64px;"/>
+                        <span>Photo</span><br/>
+                        <img src="/static/image/icon-photo.png" alt="" class="icon--64"
+                             data-duice-bind="user"
+                             data-duice-property="photo"
+                             data-duice-editable="true"/>
                     </label>
                 </div>
             </div>
