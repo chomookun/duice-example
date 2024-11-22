@@ -2,9 +2,108 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Users</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/duice/dist/duice.js"></script>
+    <style>
+        html {
+            font-size: 75%;
+        }
+    </style>
+    <script>
+        const _apiUrl = 'https://my-json-server.typicode.com/oopscraft/duice-example';
+
+        const userSearch = new duice.ObjectProxy({
+            name: null,
+            status: null,
+            _limit: 2,
+            _page: 1
+        });
+        const users = new duice.ArrayProxy([]);
+        const user = new duice.ObjectProxy({});
+
+        function getUsers() {
+            let url = new URL(`${_apiUrl}/users`);
+            userSearch.name && url.searchParams.append('name', userSearch.name);
+            userSearch.status && url.searchParams.append('status', userSearch.status);
+            url.searchParams.append('_limit', userSearch._limit);
+            url.searchParams.append('_page', userSearch._page);
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                duice.ArrayProxy.assign(users, data);
+            });
+        }
+
+        function getUser(userId) {
+            let url = new URL(`${_apiUrl}/users/${userId}`);
+            fetch(url)
+            .then(response => response.json)
+            .then(data => {
+                duice.ObjectProxy.assign(user, data);
+            });
+        }
+
+        function createUser() {
+
+        }
+
+        function saveUser() {
+
+        }
+
+        function deleteUser() {
+
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            getUsers();
+        });
+    </script>
 </head>
 <body>
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>No</th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Admin</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-duice-bind="users" data-duice-loop="user,status">
+                    <td data-duice-bind="status" data-duice-property="count"></td>
+                    <td>
+                        <img src="" alt=""/>
+                        <span data-duice-bind="user" data-duice-property="userId"></span>
+                    </td>
+                    <td data-duice-bind="user" data-duice-property="name"></td>
+                    <td>
+                        <span></span>
+                    </td>
+                    <td>
+                        <input type="checkbox" data-duice-bind="user" data-duice-property="admin"/>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col">
+            <form>
+
+            </form>
+        </div>
+    </div>
+<div>
+
+
 
 </body>
 </html>

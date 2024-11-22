@@ -29,6 +29,56 @@
       "photo": null,
       "profile": null,
       "joinAt": "2024-11-22T18:07:53+09:00"
+    },
+    {
+      "userId": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "username": "melon@oopscraft.org",
+      "name": "Melon",
+      "status": "ACTIVE",
+      "admin": false,
+      "photo": null,
+      "profile": null,
+      "joinAt": "2024-11-22T18:07:53+09:00"
+    },
+    {
+      "userId": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "username": "monkey@oopscraft.org",
+      "name": "Monkey",
+      "status": "ACTIVE",
+      "admin": false,
+      "photo": null,
+      "profile": null,
+      "joinAt": "2024-11-22T18:07:53+09:00"
+    },
+    {
+      "userId": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "username": "banana@oopscraft.org",
+      "name": "Banana",
+      "status": "ACTIVE",
+      "admin": false,
+      "photo": null,
+      "profile": null,
+      "joinAt": "2024-11-22T18:07:53+09:00"
+    },
+    {
+      "userId": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "username": "james@oopscraft.org",
+      "name": "James",
+      "status": "ACTIVE",
+      "admin": false,
+      "photo": null,
+      "profile": null,
+      "joinAt": "2024-11-22T18:07:53+09:00"
+    },
+    {
+      "userId": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "username": "snake@oopscraft.org",
+      "name": "Snake",
+      "status": "ACTIVE",
+      "admin": false,
+      "photo": null,
+      "profile": null,
+      "joinAt": "2024-11-22T18:07:53+09:00"
     }
   ]
 }
