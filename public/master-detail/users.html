@@ -6,6 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/duice/dist/duice.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/duice-pagination/dist/duice-pagination.js"></script>
     <style>
         html {
             font-size: 75%;
@@ -17,16 +18,19 @@
         const userSearch = new duice.ObjectProxy({
             name: null,
             status: null,
-            _limit: 2,
+            admin: null,
+            _limit: 5,
             _page: 1
         });
         const users = new duice.ArrayProxy([]);
         const user = new duice.ObjectProxy({});
 
-        function getUsers() {
+        function getUsers(page) {
+            userSearch._page = page || 1;
             let url = new URL(`${_apiUrl}/users`);
-            userSearch.name && url.searchParams.append('name', userSearch.name);
+            userSearch.name && url.searchParams.append('name_like', userSearch.name);
             userSearch.status && url.searchParams.append('status', userSearch.status);
+            userSearch.admin && url.searchParams.append('admin', userSearch.admin);
             url.searchParams.append('_limit', userSearch._limit);
             url.searchParams.append('_page', userSearch._page);
             fetch(url)
@@ -34,6 +38,11 @@
             .then(data => {
                 duice.ArrayProxy.assign(users, data);
             });
+        }
+
+        function resetUsers() {
+            duice.ObjectProxy.reset(userSearch);
+            getUsers();
         }
 
         function getUser(userId) {
@@ -67,33 +76,64 @@
 <div class="container">
     <div class="row">
         <div class="col">
-            <table class="table">
+            <form onsubmit="return false;" class="p-1">
+                <div class="row">
+                    <div class="col">
+                        <input type="text" data-duice-bind="userSearch" data-duice-property="name" class="form-control" placeholder="Name" aria-label="Name">
+                    </div>
+                    <div class="col">
+                        <select data-duice-bind="userSearch" data-duice-property="status" class="form-select">
+                            <option value="">Status...</option>
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="LOCKED">LOCKED</option>
+                        </select>
+                    </div>
+                    <div class="col d-flex align-items-center">
+                        <label class="form-check-label">
+                            <input type="checkbox" data-duice-bind="userSearch" data-duice-property="admin" class="form-check-input">
+                            Admin
+                        </label>
+                    </div>
+                    <div class="col d-flex gap-1 justify-content-end">
+                        <button type="submit" onclick="getUsers(1);" class="btn btn-primary">Search</button>
+                        <button type="button" onclick="resetUsers();" class="btn btn-secondary">Reset</button>
+                    </div>
+                </div>
+            </form>
+            <table class="table table-bordered table-hover">
                 <thead>
                 <tr>
-                    <th>No</th>
-                    <th>ID</th>
+                    <th class="text-center">No</th>
+                    <th>Username</th>
                     <th>Name</th>
-                    <th>Status</th>
-                    <th>Admin</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Admin</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr data-duice-bind="users" data-duice-loop="user,status">
-                    <td data-duice-bind="status" data-duice-property="count"></td>
+                    <td data-duice-bind="status" data-duice-property="count" class="text-center"></td>
                     <td>
-                        <img src="" alt=""/>
-                        <span data-duice-bind="user" data-duice-property="userId"></span>
+                        <img src="" alt="" data-duice-bind="user" data-duice-property="photo"/>
+                        <span data-duice-bind="user" data-duice-property="username"></span>
                     </td>
                     <td data-duice-bind="user" data-duice-property="name"></td>
-                    <td>
-                        <span></span>
+                    <td class="text-center">
+                        <span data-duice-bind="user" data-duice-property="status" class="badge bg-primary"></span>
                     </td>
-                    <td>
+                    <td class="text-center">
                         <input type="checkbox" data-duice-bind="user" data-duice-property="admin"/>
                     </td>
                 </tr>
                 </tbody>
             </table>
+            <div class="d-flex justify-content-center">
+                <ul class="pagination">
+                    <li class="page-item"><a class="page-link" href="#" onclick="getUsers(userSearch._page-1);">Previous</a></li>
+                    <li class="page-item"><a class="page-link" href="#" data-duice-bind="userSearch" data-duice-property="_page"></a></li>
+                    <li class="page-item"><a class="page-link" href="#" onclick="getUsers(userSearch._page+1);">Next</a></li>
+                </ul>
+            </div>
         </div>
         <div class="col">
             <form>
