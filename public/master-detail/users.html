@@ -11,10 +11,30 @@
         html {
             font-size: 75%;
         }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        main {
+            width: 1000px;
+            display: grid;
+            grid-template-areas:
+                'master detail';
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto;
+            gap: 1rem;
+        }
+        .master {
+            grid-area: master;
+        }
+        .detail {
+            grid-area: detail;
+        }
     </style>
     <script>
         const _apiUrl = 'https://my-json-server.typicode.com/oopscraft/duice-example';
-
         const userSearch = new duice.ObjectProxy({
             name: null,
             status: null,
@@ -45,8 +65,8 @@
             getUsers();
         }
 
-        function getUser(userId) {
-            let url = new URL(`${_apiUrl}/users/${userId}`);
+        function getUser(id) {
+            let url = new URL(`${_apiUrl}/users/${id}`);
             fetch(url)
             .then(response => response.json)
             .then(data => {
@@ -73,75 +93,136 @@
 </head>
 <body>
 
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <form onsubmit="return false;" class="p-1">
-                <div class="row">
-                    <div class="col">
-                        <input type="text" data-duice-bind="userSearch" data-duice-property="name" class="form-control" placeholder="Name" aria-label="Name">
-                    </div>
-                    <div class="col">
-                        <select data-duice-bind="userSearch" data-duice-property="status" class="form-select">
-                            <option value="">Status...</option>
-                            <option value="ACTIVE">ACTIVE</option>
-                            <option value="LOCKED">LOCKED</option>
-                        </select>
-                    </div>
-                    <div class="col d-flex align-items-center">
-                        <label class="form-check-label">
-                            <input type="checkbox" data-duice-bind="userSearch" data-duice-property="admin" class="form-check-input">
-                            Admin
-                        </label>
-                    </div>
-                    <div class="col d-flex gap-1 justify-content-end">
-                        <button type="submit" onclick="getUsers(1);" class="btn btn-primary">Search</button>
-                        <button type="button" onclick="resetUsers();" class="btn btn-secondary">Reset</button>
-                    </div>
+<main>
+    <div class="master d-flex flex-column gap-1">
+        <h2>Master</h2>
+        <form onsubmit="return false;" class="d-flex justify-content-between">
+            <div class="d-flex gap-1">
+                <div>
+                    <input type="text" data-duice-bind="userSearch" data-duice-property="name" class="form-control" placeholder="Name" aria-label="Name">
                 </div>
-            </form>
-            <table class="table table-bordered table-hover">
-                <thead>
-                <tr>
-                    <th class="text-center">No</th>
-                    <th>Username</th>
-                    <th>Name</th>
-                    <th class="text-center">Status</th>
-                    <th class="text-center">Admin</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr data-duice-bind="users" data-duice-loop="user,status">
-                    <td data-duice-bind="status" data-duice-property="count" class="text-center"></td>
-                    <td>
-                        <img src="" alt="" data-duice-bind="user" data-duice-property="photo"/>
-                        <span data-duice-bind="user" data-duice-property="username"></span>
-                    </td>
-                    <td data-duice-bind="user" data-duice-property="name"></td>
-                    <td class="text-center">
-                        <span data-duice-bind="user" data-duice-property="status" class="badge bg-primary"></span>
-                    </td>
-                    <td class="text-center">
-                        <input type="checkbox" data-duice-bind="user" data-duice-property="admin"/>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-            <div class="d-flex justify-content-center">
-                <ul class="pagination">
-                    <li class="page-item"><a class="page-link" href="#" onclick="getUsers(userSearch._page-1);">Previous</a></li>
-                    <li class="page-item"><a class="page-link" href="#" data-duice-bind="userSearch" data-duice-property="_page"></a></li>
-                    <li class="page-item"><a class="page-link" href="#" onclick="getUsers(userSearch._page+1);">Next</a></li>
-                </ul>
+                <div>
+                    <select data-duice-bind="userSearch" data-duice-property="status" class="form-select">
+                        <option value="">Status...</option>
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="LOCKED">LOCKED</option>
+                    </select>
+                </div>
+                <div class="d-flex align-items-center">
+                    <label class="form-check-label">
+                        <input type="checkbox" data-duice-bind="userSearch" data-duice-property="admin" class="form-check-input">
+                        Admin
+                    </label>
+                </div>
             </div>
-        </div>
-        <div class="col">
-            <form>
-
-            </form>
+            <div class="d-flex gap-1 justify-content-end">
+                <button type="submit" onclick="getUsers(1);" class="btn btn-primary">Search</button>
+                <button type="button" onclick="resetUsers();" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>No</th>
+                <th>Username</th>
+                <th>Name</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Admin</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr style="cursor:pointer;"
+                data-duice-bind="users"
+                data-duice-loop="user,status"
+                data-duice-execute="this.dataset.id=user.id;"
+                onclick="getUser(this.dataset.id);">
+                <td data-duice-bind="status"
+                    data-duice-property="count"
+                    class="text-center"></td>
+                <td>
+                    <img src="" alt=""
+                         data-duice-bind="user"
+                         data-duice-property="photo"/>
+                    <span data-duice-bind="user"
+                          data-duice-property="username"></span>
+                </td>
+                <td data-duice-bind="user"
+                    data-duice-property="name"></td>
+                <td class="text-center">
+                    <span data-duice-bind="user"
+                          data-duice-property="status"
+                          class="badge bg-secondary"></span>
+                </td>
+                <td class="text-center">
+                    <input type="checkbox"
+                           data-duice-bind="user"
+                           data-duice-property="admin"/>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="d-flex justify-content-center">
+            <ul class="pagination">
+                <li class="page-item"><a class="page-link" href="#" onclick="getUsers(userSearch._page-1);">Previous</a></li>
+                <li class="page-item"><a class="page-link" href="#" data-duice-bind="userSearch" data-duice-property="_page"></a></li>
+                <li class="page-item"><a class="page-link" href="#" onclick="getUsers(userSearch._page+1);">Next</a></li>
+            </ul>
         </div>
     </div>
-<div>
+    <div class="detail">
+        <h2>Detail</h2>
+        <form class="container border p-4">
+            <div class="row py-2">
+                <div class="col">
+                    <label class="w-100">
+                        Username
+                        <input type="email" class="form-control"
+                               data-duice-bind="user"
+                               data-duice-property="username">
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="w-100">
+                        Name
+                        <input type="text" class="form-control"
+                               data-duice-bind="user"
+                               data-duice-property="name">
+                    </label>
+                </div>
+            </div>
+            <div class="row py-2">
+                <div class="col">
+                    <label class="w-100">
+                        Username
+                        <input type="email" class="form-control">
+                    </label>
+                </div>
+                <div class="col align-self-end">
+                    <label class="w-100">
+                        <input type="checkbox" class="form-checkbox-input">
+                        Admin
+                    </label>
+                </div>
+            </div>
+            <div class="row py-2">
+                <div class="col">
+                    <label class="w-100">
+                        Photo<br/>
+                        <img alt="" style="width:64px; height:64px;"/>
+                    </label>
+                </div>
+            </div>
+            <div class="row py-2">
+                <div class="col">
+                    <label class="w-100">
+                        Profile
+                        <textarea class="form-control"></textarea>
+                    </label>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
 
 
 
