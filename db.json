@@ -1,12 +1,35 @@
 {
-  "posts": [
+  "users": [
     {
-      "id": 1,
-      "title": "hello"
+      "userId": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "username": "admin@oopscraft.org",
+      "name": "Admin",
+      "status": "ACTIVE",
+      "admin": true,
+      "photo": null,
+      "profile": null,
+      "joinAt": "2024-11-22T18:07:53+09:00"
+    },
+    {
+      "userId": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "username": "apple@oopscraft.org",
+      "name": "Apple",
+      "status": "ACTIVE",
+      "admin": false,
+      "photo": null,
+      "profile": null,
+      "joinAt": "2024-11-22T18:07:53+09:00"
+    },
+    {
+      "userId": "8d95f413896e4afcb81f-d7ac8ef8915f",
+      "username": "orange@oopscraft.org",
+      "name": "Orange",
+      "status": "ACTIVE",
+      "admin": false,
+      "photo": null,
+      "profile": null,
+      "joinAt": "2024-11-22T18:07:53+09:00"
     }
-  ],
-  "profile": {
-    "name": "chomookun"
-  }
+  ]
 }
 
