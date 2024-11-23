@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Users</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/duice/dist/duice.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/duice-pagination/dist/duice-pagination.js"></script>
+    <style>
+        html {
+            font-size: 75%;
+        }
+        main {
+            padding: 2rem;
+            display: grid;
+            grid-template-areas:
+                'title title'
+                'master detail';
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto;
+            gap: 1rem;
+        }
+        .master {
+            grid-area: master;
+        }
+        .detail {
+            grid-area: detail;
+        }
+        table tr th,td {
+            vertical-align: middle;
+        }
+        .icon--32 {
+            height: 32px;
+        }
+        .icon--64 {
+            height: 64px;
+        }
+        .cursor--pointer {
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        // const _apiUrl = 'https://my-json-server.typicode.com/oopscraft/duice-example';
+        const userSearch = new duice.ObjectProxy({
+            name: null,
+            _size: 10,
+            _page: 1
+        });
+        const users = new duice.ArrayProxy([]);
+        const user = new duice.ObjectProxy({});
+
+        function getUsers(page) {
+            userSearch._page = page || 0;
+            let url = new URL(`api/users`, location.origin);
+            userSearch.name && url.searchParams.append('name_like', userSearch.name);
+            url.searchParams.append('_size', userSearch._size);
+            url.searchParams.append('_page', userSearch._page);
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                duice.ArrayProxy.assign(users, data);
+            });
+        }
+
+        function resetUsers() {
+            duice.ObjectProxy.reset(userSearch);
+            getUsers(0);
+        }
+
+        function getUser(id) {
+            let url = new URL(`/api/users/${id}`, location.origin);
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                duice.ObjectProxy.assign(user, data);
+            });
+        }
+
+        function createUser() {
+            duice.ObjectProxy.clear(user);
+            duice.ObjectProxy.assign(user, {});
+        }
+
+        async function saveUser() {
+            if (!await new duice.ConfirmDialog('save?').open()) {
+                return;
+            }
+            let url;
+            let method;
+            if (user.id) {
+                url = `/api/users/${user.id}`;
+                method = 'PUT';
+            } else {
+                url = `/api/users`;
+                method = 'POST';
+            }
+            fetch(new URL(url, location.origin), {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(user)
+            }).then(response => response.json())
+                .then(data => {
+                    new duice.AlertDialog('saved ok').open()
+                    .then(() => {
+                        duice.ObjectProxy.assign(user, data);
+                        getUsers();
+                    });
+                });
+        }
+
+        async function deleteUser() {
+            if (!await new duice.ConfirmDialog('delete user?').open()) {
+                return;
+            }
+            fetch(new URL(`/api/users/${user.id}`, location.origin), {
+                method: 'DELETE'
+            }).then(() => {
+                duice.ObjectProxy.clear(user);
+                getUsers();
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            getUsers();
+        });
+    </script>
+</head>
+<body>
+
+<main>
+    <div class="title">
+        <h1>Master Detail Pattern</h1>
+    </div>
+    <div class="master d-flex flex-column gap-1">
+        <h2>Master</h2>
+        <form onsubmit="return false;" class="d-flex justify-content-between">
+            <div class="d-flex gap-1">
+                <div>
+                    <input type="text" data-duice-bind="userSearch" data-duice-property="name" class="form-control" placeholder="Name" aria-label="Name">
+                </div>
+            </div>
+            <div class="d-flex gap-1 justify-content-end">
+                <button type="submit" onclick="getUsers(0);" class="btn btn-primary">Search</button>
+                <button type="button" onclick="resetUsers();" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th class="text-center">No</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Group</th>
+                <th class="text-center">Active</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-duice-bind="users"
+                data-duice-loop="user,status"
+                data-duice-execute="this.dataset.id=user.id;"
+                data-duice-selected-item-class="table-active"
+                onclick="getUser(this.dataset.id);"
+                class="cursor--pointer">
+                <td data-duice-bind="status"
+                    data-duice-property="count"
+                    class="text-center"></td>
+                <td>
+                    <img src="/static/image/icon-image.png" alt="" class="icon--32"
+                         data-duice-bind="user"
+                         data-duice-property="image"/>
+                    <span data-duice-bind="user"
+                          data-duice-property="username"></span>
+                </td>
+                <td data-duice-bind="user"
+                    data-duice-property="email">
+                </td>
+                <td data-duice-bind="user"
+                    data-duice-property="phone">
+                </td>
+                <td>
+                    <select class="form-select"
+                            data-duice-bind="user"
+                            data-duice-property="groupId">
+                        <option selected disabled>-</option>
+                        <option value="human">Human</option>
+                        <option value="animal">Animal</option>
+                        <option value="plant">Plant</option>
+                    </select>
+                </td>
+                <td class="text-center">
+                    <input type="checkbox"
+                           data-duice-bind="user"
+                           data-duice-property="active"/>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="d-flex justify-content-between">
+            <div></div>
+            <ul class="pagination">
+                <li class="page-item"><a class="page-link" href="#" onclick="getUsers(userSearch._page-1);">Previous</a></li>
+                <li class="page-item"><a class="page-link" href="#" data-duice-bind="userSearch" data-duice-property="_page"></a></li>
+                <li class="page-item"><a class="page-link" href="#" onclick="getUsers(userSearch._page+1);">Next</a></li>
+            </ul>
+            <div class="text-end">
+                <button type="button" onclick="createUser();" class="btn btn-secondary">New</button>
+            </div>
+        </div>
+    </div>
+    <div class="detail">
+        <h2>Detail</h2>
+        <form class="container border p-4">
+            <div class="row py-2">
+                <div class="col">
+                    <label class="w-100">
+                        <span>Username</span>
+                        <input type="text" class="form-control"
+                               data-duice-bind="user"
+                               data-duice-property="username">
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="w-100">
+                        <span>Password</span>
+                        <input type="password" class="form-control"
+                               data-duice-bind="user"
+                               data-duice-property="password">
+                    </label>
+                </div>
+            </div>
+            <div class="row py-2">
+                <div class="col">
+                    <label class="w-100">
+                        <span>Email</span>
+                        <input type="email" class="form-control"
+                               data-duice-bind="user"
+                               data-duice-property="email">
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="w-100">
+                        <span>Phone</span>
+                        <input type="text" class="form-control"
+                               data-duice-bind="user"
+                               data-duice-property="phone">
+                    </label>
+                </div>
+            </div>
+            <div class="row py-2">
+                <div class="col">
+                    <label class="w-100">
+                        <span>Group</span>
+                        <select class="form-select"
+                                data-duice-bind="user"
+                                data-duice-property="groupId">
+                            <option selected>Group...</option>
+                            <option value="human">Human</option>
+                            <option value="animal">Animal</option>
+                            <option value="plant">Plant</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="col align-self-end">
+                    <label class="w-100">
+                        <input type="checkbox" class="form-checkbox-input"
+                               data-duice-bind="user"
+                               data-duice-property="active">
+                        <span>Active</span>
+                    </label>
+                </div>
+            </div>
+            <div class="row py-2">
+                <div class="col">
+                    <label class="w-100">
+                        <span>Photo</span><br/>
+                        <img src="/static/image/icon-image.png" alt="" class="icon--64"
+                             data-duice-bind="user"
+                             data-duice-property="image"
+                             data-duice-editable="true"/>
+                    </label>
+                </div>
+            </div>
+            <div class="row py-2">
+                <div class="col">
+                    <label class="w-100">
+                        Profile
+                        <textarea class="form-control"></textarea>
+                    </label>
+                </div>
+            </div>
+            <div class="row py-2">
+                <div class="col">
+                    <label class="w-100">
+                        <span>SocialNo</span>
+                        <input type="text" class="form-control"
+                               data-duice-bind="user"
+                               data-duice-property="socialNo" data-duice-format="string('######-#######')">
+                    </label>
+                </div>
+                <div class="col">
+                    <span>Gender</span>
+                    <div>
+                        <label>
+                            <input type="radio" value="M"
+                                   data-duice-bind="user"
+                                   data-duice-property="gender"/>
+                            <span>Male</span>
+                        </label>
+                        <label>
+                            <input type="radio" value="F"
+                                   data-duice-bind="user"
+                                   data-duice-property="gender"/>
+                            <span>Female</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="row py-2">
+                <div class="col text-end">
+                    <button type="button" onclick="deleteUser();" class="btn btn-danger">Delete</button>
+                    <button type="submit" onclick="saveUser();" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+
+
+
+</body>
+</html>
