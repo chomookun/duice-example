@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import * as fs from "fs";
 import * as path from 'path';
 import { v4 } from 'uuid';
+import {MongoMemoryServer} from "mongodb-memory-server";
+import * as mongoose from "mongoose";
+import {MongoClient} from "mongodb";
 
 @Injectable()
 export class ApiService {
@@ -10,68 +13,75 @@ export class ApiService {
 
     private lock: boolean = false;
 
+    private mongoServer: MongoMemoryServer;
+
+    private mongoClient;
+
+    private db;
+
     async onModuleInit() {
-        const usersFilePath = path.join(process.cwd(), 'data', 'users.json');
-        if (fs.existsSync(usersFilePath)) {
-            const usersJson = fs.readFileSync(usersFilePath, 'utf-8');
-            this.users = JSON.parse(usersJson);
-        } else {
-            console.log('users.json file not found!');
-        }
+        this.mongoServer = await MongoMemoryServer.create();
+        this.mongoClient= new MongoClient(this.mongoServer.getUri());
+        await this.mongoClient.connect();
+        this.db = this.mongoClient.db();
+        // inserts users
+        this.db.collection('users').insertMany(ApiService.getJsonFromFile('users'));
     }
 
-    private async withLock(callback: Function) {
-        while (this.lock) {
-            await new Promise(resolve => setTimeout(resolve, 10));
-        }
-        this.lock = true;
+    private static getJsonFromFile(name: string) {
         try {
-            await callback();
-        } finally {
-            this.lock = false;
+            const usersFilePath = path.join(process.cwd(), 'data', `${name}.json`);
+            const usersJson = fs.readFileSync(usersFilePath, 'utf-8');
+            return JSON.parse(usersJson);
+        } catch (e) {
+            throw e;
         }
     }
 
     async getUsers(search: object, size?: number, page?: number): Promise<object[]> {
-        let users;
-        let offset = size * page;
-        let limit = size;
-        console.log("offset,limit", offset, limit);
-        await this.withLock(async () => {
-            users = this.users.slice(offset, (offset + limit) + 1);
-        });
-        return users;
+        const filter: any = {};
+        if (search['username']) {
+            filter.username = { $regex: `.*${search['username']}.*`, $options: 'i' };
+        }
+        if (search['email']) {
+            filter.email = { $regex: `.*${search['email']}.*`, $options: 'i' };
+        }
+        const offset: number = Number(size * page);
+        const limit: number = Number(size);
+        const usersCollection = await this.db.collection('users');
+        return await usersCollection.find(filter)
+            .sort({_id: -1})
+            .skip(offset)
+            .limit(limit)
+            .toArray();
     }
 
     async getUser(id: string): Promise<object> {
-        let user;
-        await this.withLock(async() => {
-            user = this.users.find(user => user['id'] === id);
-        });
-        return user || null;
+        const usersCollection = await this.db.collection('users');
+        return usersCollection.findOne({id:id});
     }
 
     async saveUser(user: object): Promise<object> {
-        await this.withLock(async() => {
-            const id = user['id'];
-            if (id) {
-                this.users.filter(it => it['id'] === id)
-                    .map(it => {
-                        Object.assign(it, user);
-                    });
-            } else {
-                user['id'] = v4().replace(/-/g, '');
-                this.users.unshift(user);
+        const usersCollection = await this.db.collection('users');
+        let targetUser = await usersCollection.findOne({id:user['id']});
+        if (!targetUser) {
+            user['id'] = v4();
+            await usersCollection.insertOne(user);
+        } else {
+            // Object.assign(targetUser, user);
+            for (let key in user) {
+                if (key !== '_id') {
+                    targetUser[key] = user[key];
+                }
             }
-        });
+            await usersCollection.updateOne({id:targetUser.id},{$set:targetUser});
+        }
         return user;
     }
 
-    deleteUser(id: string): void {
-        const index = this.users.findIndex(it => it['id'] === id);
-        if (index > -1) {
-            this.users.splice(index, 1);
-        }
+    async deleteUser(id: string): Promise<void> {
+        const usersCollection = await this.db.collection('users');
+        usersCollection.deleteOne({id: id});
     }
 
 }
