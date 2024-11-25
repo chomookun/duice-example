@@ -37,10 +37,15 @@ ENV MONGOMS_DEBUG=1
 # copy dist
 #COPY dist /app/dist
 
+# copy
 COPY package*.json ./
 COPY tsconfig*.json ./
 COPY src ./src
 COPY public ./public
+
+# build
+RUN npm install --save-dev
+RUN npm run build
 
 # expose
 EXPOSE 8080
