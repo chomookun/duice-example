@@ -27,15 +27,20 @@ ENV MONGOMS_DEBUG=1
 #ENV MONGOMS_DOWNLOAD_URL=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2004-7.0.14.tgz
 
 # npm install
-COPY package*.json ./
-RUN npm install --save-dev
+#COPY package*.json ./
+#RUN npm install --save-dev
 
 # npm build
-COPY tsconfig*.json ./
-RUN npm run build
+#COPY tsconfig*.json ./
+#RUN npm run build
 
 # copy dist
-COPY dist /app/dist
+#COPY dist /app/dist
+
+COPY package*.json ./
+COPY tsconfig*.json ./
+COPY src ./src
+COPY public ./public
 
 # expose
 EXPOSE 8080
