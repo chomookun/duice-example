@@ -35,7 +35,7 @@ COPY tsconfig*.json ./
 RUN npm run build
 
 # copy dist
-# COPY ./dist /app/dist
+COPY dist /app/dist
 
 # expose
 EXPOSE 8080
