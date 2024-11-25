@@ -2,16 +2,11 @@ import { Injectable } from '@nestjs/common';
 import * as fs from "fs";
 import * as path from 'path';
 import { v4 } from 'uuid';
-import {MongoMemoryServer} from "mongodb-memory-server";
-import * as mongoose from "mongoose";
 import {MongoClient} from "mongodb";
+import {MongoMemoryServer} from "mongodb-memory-server";
 
 @Injectable()
 export class ApiService {
-
-    users: object[] = [];
-
-    private lock: boolean = false;
 
     private mongoServer: MongoMemoryServer;
 
@@ -20,12 +15,14 @@ export class ApiService {
     private db;
 
     async onModuleInit() {
-        this.mongoServer = await MongoMemoryServer.create();
+        this.mongoServer = await MongoMemoryServer.create({
+            binary: {}
+        });
         this.mongoClient= new MongoClient(this.mongoServer.getUri());
         await this.mongoClient.connect();
         this.db = this.mongoClient.db();
         // inserts users
-        this.db.collection('users').insertMany(ApiService.getJsonFromFile('users'));
+        await this.db.collection('users').insertMany(ApiService.getJsonFromFile('users'));
     }
 
     private static getJsonFromFile(name: string) {
@@ -38,14 +35,27 @@ export class ApiService {
         }
     }
 
+    async forceToDelay(millis: number): Promise<void> {
+        await new Promise(resolve => setTimeout(resolve, millis));
+    }
+
     async getUsers(search: object, size?: number, page?: number): Promise<object[]> {
+        await this.forceToDelay(1_000);
+        console.debug('search', search);
         const filter: any = {};
-        if (search['username']) {
-            filter.username = { $regex: `.*${search['username']}.*`, $options: 'i' };
+        if (search['name']) {
+            filter.name = { $regex: `.*${search['name']}.*`, $options: 'i' };
         }
         if (search['email']) {
             filter.email = { $regex: `.*${search['email']}.*`, $options: 'i' };
         }
+        if (search['groupId']) {
+            filter.groupId = { $eq: search['groupId'] };
+        }
+        if (search['active']) {
+            filter.active = { $eq: Boolean(search['active']) };
+        }
+        console.debug('filter', filter);
         const offset: number = Number(size * page);
         const limit: number = Number(size);
         const usersCollection = await this.db.collection('users');
@@ -57,11 +67,13 @@ export class ApiService {
     }
 
     async getUser(id: string): Promise<object> {
+        await this.forceToDelay(100);
         const usersCollection = await this.db.collection('users');
         return usersCollection.findOne({id:id});
     }
 
     async saveUser(user: object): Promise<object> {
+        await this.forceToDelay(1_000);
         const usersCollection = await this.db.collection('users');
         let targetUser = await usersCollection.findOne({id:user['id']});
         if (!targetUser) {
@@ -80,6 +92,7 @@ export class ApiService {
     }
 
     async deleteUser(id: string): Promise<void> {
+        await this.forceToDelay(1_000);
         const usersCollection = await this.db.collection('users');
         usersCollection.deleteOne({id: id});
     }

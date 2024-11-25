@@ -106,6 +106,10 @@ table tbody tr:hover {
   background-color: var(--nudus-table-tbody-hover-background);
 }
 
+table tbody tr.selected {
+  background-color: var(--nudus-table-tbody-hover-background);
+}
+
 /* form */
 form {
   border: var(--nudus-form-border);

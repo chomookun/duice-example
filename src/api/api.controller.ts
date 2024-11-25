@@ -12,7 +12,6 @@ export class ApiController {
         @Query("_size") size?: number,
         @Query("_page") page?: number
     ): Promise<object[]> {
-        console.log("size,page", size, page);
         return this.apiService.getUsers(search, size, page);
     }
 
