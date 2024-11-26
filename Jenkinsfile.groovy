@@ -23,7 +23,7 @@ pipeline {
         stage("build") {
             steps {
                 sh '''
-                docker build -t ${IMAGE_NAMESPACE}/duice-example:${IMAGE_TAGS} .
+                docker build -t ${IMAGE_NAMESPACE}/duice-site:${IMAGE_TAGS} .
                 '''.stripIndent()
             }
         }
@@ -34,7 +34,7 @@ pipeline {
             steps {
                 sh '''
                 docker login ${IMAGE_REPO_URL}
-                docker push ${IMAGE_NAMESPACE}/duice-example:${IMAGE_TAGS}
+                docker push ${IMAGE_NAMESPACE}/duice-site:${IMAGE_TAGS}
                 '''.stripIndent()
             }
         }
@@ -42,12 +42,12 @@ pipeline {
             steps {
                 sh '''
                     kubectl \
-                    rollout restart deployment/duice-example \
+                    rollout restart deployment/duice-site \
                     -o yaml
                 '''.stripIndent()
                 sh '''
                     kubectl \
-                    rollout status deployment/duice-example --timeout=10m
+                    rollout status deployment/duice-site --timeout=10m
                 '''.stripIndent()
             }
         }
