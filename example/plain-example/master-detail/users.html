@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <title>Users</title>
     <script src="https://cdn.jsdelivr.net/npm/duice/dist/duice.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/duice-pagination/dist/duice-pagination.js"></script>
-    <link rel="stylesheet" href="/static/nudus/nudus.css"/>
-    <link rel="stylesheet" href="/static/nudus/nudus-element.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/duice/dist/duice.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/duice/dist/duice-theme.css"/>
     <link rel="stylesheet" href="/static/fontawesome/css/all.min.css"/>
-    <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="/static/fontawesome/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         main {
             padding: 2rem;
@@ -227,7 +225,7 @@
                 <table class="width--100">
                     <colgroup>
                         <col style="width:5rem;"/>
-                        <col span="2" style="width:100%"/>
+                        <col span="2"/>
                         <col style="width:10rem;"/>
                         <col style="width:8rem;"/>
                         <col style="width:5rem;"/>
@@ -296,7 +294,6 @@
                         data-duice-if="return userSearch._status === 'loading';">
                         <td colspan="100%" class="text-align--center">
                             <span class="animate__animated animate__flash">
-                                <i class="fa-solid fa-wifi"></i>
                                 Loading...
                             </span>
                         </td>
@@ -306,7 +303,6 @@
                         data-duice-if="return userSearch._status === 'completed' && users.length < 1;">
                        <td colspan="100%" class="text-align--center">
                            <span>
-                               <i class="fa-regular fa-circle-xmark"></i>
                                Data Not Found
                            </span>
                        </td>
