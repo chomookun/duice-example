@@ -1,18 +1,18 @@
 {
-  "name": "duice-site",
+  "name": "duice-example",
   "version": "0.0.1",
   "description": "",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
   "workspaces": [
-    "example/react-example",
-    "example/vue-example"
+		"example/react-example",
+		"example/vue-example"
   ],
   "scripts": {
-    "build": "npm-run-all build:nest build:workspaces",
-    "build:nest": "nest build",
-    "build:workspaces": "npm run build --workspaces",
+    "build": "npm-run-all build:workspaces build:nest",
+		"build:workspaces": "npm run build --workspaces",
+		"build:nest": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -30,6 +30,7 @@
     "@nestjs/core": "^10.4.8",
     "@nestjs/platform-express": "^10.4.8",
     "@nestjs/serve-static": "^4.0.2",
+    "duice": "*",
     "path": "^0.12.7",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
