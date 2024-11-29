@@ -46,7 +46,7 @@ function MasterDetail() {
   const getUsers = (event, page) => {
     event && event.preventDefault();
     userSearch._page = page || 0;
-    let url = new URL(`http://localhost:3000/api/users`);
+    let url = new URL(`${process.env.REACT_APP_API_URL}/api/users`);
     if (userSearch.key && userSearch.value) {
       url.searchParams.append(userSearch.key, userSearch.value);
     }
@@ -74,7 +74,7 @@ function MasterDetail() {
   };
 
   const getUser = (id) => {
-    let url = new URL(`http://localhost:3000/api/users/${id}`);
+    let url = new URL(`${process.env.REACT_APP_API_URL}/api/users/${id}`);
     fetch(url)
     .then(response => response.json())
     .then(data => {
@@ -87,7 +87,7 @@ function MasterDetail() {
     console.log("saveUser", user);
   };
 
-  // intializes duice
+  // initialize duice
   const container = useRef(null);
   useEffect(() => {
     Initializer.initialize(container.current, {
