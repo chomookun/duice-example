@@ -313,7 +313,7 @@ export default {
      */
     getUsers(page) {
       this.userSearch._page = page || 0;
-      let url = new URL(`${process.env.VUE_APP_API_URL}/api/users`);
+      let url = new URL(`${process.env.VUE_APP_API_URL}/api/users`, document.location.href);
       if (this.userSearch.key && this.userSearch.value) {
         url.searchParams.append(this.userSearch.key, this.userSearch.value);
       }
@@ -351,7 +351,7 @@ export default {
      * @param id user id
      */
     getUser(id){
-      let url = new URL(`${process.env.VUE_APP_API_URL}/api/users/${id}`);
+      let url = new URL(`${process.env.VUE_APP_API_URL}/api/users/${id}`, document.location.href);
       ObjectProxy.clear(this.user);
       fetch(url)
           .then(response => response.json())
