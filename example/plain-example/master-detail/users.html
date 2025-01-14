@@ -2,6 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
     <title>Users</title>
     <script src="https://cdn.jsdelivr.net/npm/duice/dist/duice.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/duice/dist/duice.css"/>
@@ -10,6 +15,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
         main {
             padding: 2rem;
             display: grid;
@@ -20,6 +28,19 @@
             grid-template-rows: auto;
             gap: 1rem;
         }
+        @media screen and (max-width: 1023px) {
+            main {
+                padding: 2rem;
+                display: grid;
+                grid-template-areas:
+                'title'
+                'master'
+                'detail';
+                grid-template-columns: minmax(0,1fr);
+                grid-template-rows: auto;
+                gap: 1rem;
+            }
+        }
         #title {
             grid-area: title;
         }
@@ -28,6 +49,9 @@
         }
         #detail {
             grid-area: detail;
+        }
+        .selected {
+            background-color: var(--duice-table-tbody-hover-background);
         }
     </style>
     <script>
@@ -38,7 +62,7 @@
             groupId: null,
             active: null,
             _size: 20,
-            _page: 1,
+            _page: 0,
             _status: null
         });
         const users = new duice.ArrayProxy([]);
@@ -50,7 +74,9 @@
          * @param page page
          */
         function getUsers(page) {
-            userSearch._page = page || 0;
+            if (Number.isFinite(page)) {
+                userSearch._page = page;
+            }
             let url = new URL(`api/users`, location.origin);
             if (userSearch.key && userSearch.value) {
                 url.searchParams.append(userSearch.key, userSearch.value);
@@ -79,6 +105,20 @@
         }
 
         /**
+         * replace history
+         */
+        function replaceHistory() {
+            history.replaceState({ section:'master', userSearch: JSON.stringify(userSearch) }, null);
+        }
+
+        /**
+         * save history
+         */
+        function pushHistory() {
+            history.pushState({ section:'master', userSearch: JSON.stringify(userSearch) }, null, `#${new Date().getTime()}`);
+        }
+
+        /**
          * resets users
          */
         function resetUsers() {
@@ -98,6 +138,12 @@
             .then(data => {
                 duice.ObjectProxy.assign(user, data);
                 duice.ObjectProxy.setDisableAll(user, false);
+
+                // select index in users
+                duice.ArrayProxy.selectItem(users, users.findIndex(it => it.id === user.id));
+
+                // go to detail
+                document.getElementById('detail').scrollIntoView();
             });
         }
 
@@ -160,7 +206,17 @@
         // on dom document loaded
         document.addEventListener('DOMContentLoaded', () => {
             getUsers();
+            replaceHistory();
         });
+
+        // handle popstate
+        window.addEventListener('popstate', (event) => {
+            if (event.state.userSearch) {
+                duice.ObjectProxy.assign(userSearch, JSON.parse(event.state.userSearch));
+                getUsers(userSearch._page);
+            }
+        });
+
     </script>
 </head>
 <body>
@@ -173,11 +229,11 @@
                 <i class="fa-solid fa-list"></i>
                 Master
             </h2>
-            <div class="display--flex flex-direction--column gap--1px">
-                <form onsubmit="return false;" class="display--flex justify-content--space-between gap--1px">
-                    <div class="display--flex gap--1rem">
-                        <span class="display--flex gap--1px">
-                            <label>
+            <div class="display--flex flex-direction--column gap--1rem">
+                <form onsubmit="return false;" class="display--flex flex-wrap--wrap justify-content--space-between gap--1px">
+                    <div class="display--flex flex-wrap--wrap gap--1px">
+                        <div class="display--flex flex-wrap--nowrap gap--1px">
+                            <label class="flex--1">
                                 <select data-duice-bind="userSearch"
                                         data-duice-property="key">
                                     <option value="" selected>Search...</option>
@@ -185,33 +241,37 @@
                                     <option value="email">Email</option>
                                 </select>
                             </label>
-                            <label>
+                            <label class="flex--2">
                                 <input type="text"
                                        data-duice-bind="userSearch"
                                        data-duice-property="value"
                                        data-duice-execute="if (!userSearch.key) this.disabled=true;"
                                        placeholder="Keyword">
                             </label>
-                        </span>
-                        <label>
-                            <select class="width--100"
-                                    data-duice-bind="userSearch"
-                                    data-duice-property="groupId">
-                                <option value="" selected>Group...</option>
-                                <option value="human">Human</option>
-                                <option value="animal">Animal</option>
-                                <option value="plant">Plant</option>
-                            </select>
-                        </label>
-                        <label>
-                            <input type="checkbox"
-                                   data-duice-bind="userSearch"
-                                   data-duice-property="active"/>
-                            <span>Active</span>
-                        </label>
+                        </div>
+                        <div>
+                            <label>
+                                <select class="width--100"
+                                        data-duice-bind="userSearch"
+                                        data-duice-property="groupId">
+                                    <option value="" selected>Group...</option>
+                                    <option value="human">Human</option>
+                                    <option value="animal">Animal</option>
+                                    <option value="plant">Plant</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                <input type="checkbox"
+                                       data-duice-bind="userSearch"
+                                       data-duice-property="active"/>
+                                <span>Active</span>
+                            </label>
+                        </div>
                     </div>
-                    <div>
-                        <button type="submit" onclick="getUsers(0);" class="btn btn-primary">
+                    <div class="flex--1 display--flex justify-content--end gap--1px s__justify-content--start">
+                        <button type="submit" onclick="getUsers(0); pushHistory();" class="btn btn-primary">
                             <i class="fa-solid fa-magnifying-glass"></i>
                             Search
                         </button>
@@ -221,103 +281,105 @@
                         </button>
                     </div>
                 </form>
-                <table class="width--100">
-                    <colgroup>
-                        <col style="width:5rem;"/>
-                        <col span="2"/>
-                        <col style="width:10rem;"/>
-                        <col style="width:8rem;"/>
-                        <col style="width:5rem;"/>
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th class="text-align--center">No</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>SocialNo</th>
-                        <th>Group</th>
-                        <th class="text-align--center">Active</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="users"
-                        data-duice-loop="user,status"
-                        data-duice-execute="this.dataset.id=user.id;"
-                        data-duice-selected-item-class="selected"
-                        onclick="getUser(this.dataset.id);"
-                        class="cursor--pointer">
-                        <td class="text-align--center">
+                <div class="overflow--auto" style="border:var(--duice-table-border);">
+                    <table class="width--100 border--none">
+                        <colgroup>
+                            <col style="width:5rem;"/>
+                            <col span="2"/>
+                            <col style="width:10rem;"/>
+                            <col style="width:8rem;"/>
+                            <col style="width:5rem;"/>
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th class="text-align--center">No</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>SocialNo</th>
+                            <th>Group</th>
+                            <th class="text-align--center">Active</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr data-duice-bind="users"
+                            data-duice-loop="user,status"
+                            data-duice-execute="this.dataset.id=user.id;"
+                            data-duice-selected-item-class="selected"
+                            onclick="getUser(this.dataset.id);"
+                            class="cursor--pointer">
+                            <td class="text-align--center">
                         <span data-duice-bind="user"
                               data-duice-execute="
                               this.innerHTML=userSearch._size*userSearch._page+status.count;
                               ">
                         </span>
-                        </td>
-                        <td>
-                            <img src="/static/image/icon-image.png" alt="" class="height--1rem"
-                                 data-duice-bind="user"
-                                 data-duice-property="photo"/>
-                            <span data-duice-bind="user"
-                                  data-duice-property="name"></span>
-                        </td>
-                        <td data-duice-bind="user"
-                            data-duice-property="email">
-                        </td>
-                        <td class="text-align--center"
-                            data-duice-bind="user"
-                            data-duice-property="socialNo"
-                            data-duice-format="string('###-##-####')">
-                        </td>
-                        <td>
-                            <label>
-                                <select class="width--100"
-                                        data-duice-bind="user"
-                                        data-duice-property="groupId">
-                                    <option selected disabled></option>
-                                    <option value="human">Human</option>
-                                    <option value="animal">Animal</option>
-                                    <option value="plant">Plant</option>
-                                </select>
-                            </label>
-                        </td>
-                        <td class="text-align--center">
-                            <label>
-                                <input type="checkbox"
-                                       data-duice-bind="user"
-                                       data-duice-property="active"/>
-                            </label>
-                        </td>
-                    </tr>
-                    <tr hidden
-                        data-duice-bind="userSearch"
-                        data-duice-if="return userSearch._status === 'loading';">
-                        <td colspan="100%" class="text-align--center">
+                            </td>
+                            <td>
+                                <img src="/plain-example/static/image/icon-image.svg" alt="" class="height--1rem"
+                                     data-duice-bind="user"
+                                     data-duice-property="photo"/>
+                                <span data-duice-bind="user"
+                                      data-duice-property="name"></span>
+                            </td>
+                            <td data-duice-bind="user"
+                                data-duice-property="email">
+                            </td>
+                            <td class="text-align--center"
+                                data-duice-bind="user"
+                                data-duice-property="socialNo"
+                                data-duice-format="string('###-##-####')">
+                            </td>
+                            <td>
+                                <label>
+                                    <select class="width--100"
+                                            data-duice-bind="user"
+                                            data-duice-property="groupId">
+                                        <option selected disabled></option>
+                                        <option value="human">Human</option>
+                                        <option value="animal">Animal</option>
+                                        <option value="plant">Plant</option>
+                                    </select>
+                                </label>
+                            </td>
+                            <td class="text-align--center">
+                                <label>
+                                    <input type="checkbox"
+                                           data-duice-bind="user"
+                                           data-duice-property="active"/>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr hidden
+                            data-duice-bind="userSearch"
+                            data-duice-if="return userSearch._status === 'loading';">
+                            <td colspan="100%" class="text-align--center">
                             <span class="animate__animated animate__flash">
                                 Loading...
                             </span>
-                        </td>
-                    </tr>
-                    <tr hidden
-                        data-duice-bind="userSearch"
-                        data-duice-if="return userSearch._status === 'completed' && users.length < 1;">
-                       <td colspan="100%" class="text-align--center">
+                            </td>
+                        </tr>
+                        <tr hidden
+                            data-duice-bind="userSearch"
+                            data-duice-if="return userSearch._status === 'completed' && users.length < 1;">
+                            <td colspan="100%" class="text-align--center">
                            <span>
                                Data Not Found
                            </span>
-                       </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <div class="display--flex justify-content--space-between margin-top--1rem">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="display--flex justify-content--space-between">
                     <div></div>
                     <div>
-                        <button type="button" onclick="getUsers(userSearch._page-1);"
+                        <button type="button" onclick="getUsers(userSearch._page-1); pushHistory();"
                             data-duice-bind="users"
                             data-duice-execute="userSearch._page < 1 ? this.disabled=true : this.disabled=false;">
                             <i class="fa-solid fa-chevron-left"></i>
                         </button>
-                        <span data-duice-bind="userSearch" data-duice-property="_page" class="padding--1rem"></span>
-                        <button type="button" onclick="getUsers(userSearch._page+1);"
+                        <span data-duice-bind="userSearch" data-duice-execute="this.innerHTML=userSearch._page+1" class="padding--1rem"></span>
+                        <button type="button" onclick="getUsers(userSearch._page+1); pushHistory();"
                             data-duice-bind="users"
                             data-duice-execute="users.length < userSearch._size ? this.disabled=true : this.disabled=false;">
                             <i class="fa-solid fa-chevron-right"></i>
@@ -337,8 +399,8 @@
                 <i class="fa-solid fa-envelope-open-text"></i>
                 Detail
             </h2>
-            <div class="display--flex flex-direction--column grap--1px">
-                <form onsubmit="return false;" class="display--grid grid-template-columns--2fr row-gap--1rem column-gap--2rem border-style--solid border-width--1px padding--1rem">
+            <div class="display--flex flex-direction--column gap--1px padding--1em" style="border:var(--duice-table-border);">
+                <form onsubmit="return false;" class="display--grid grid-template-columns--2fr row-gap--1rem column-gap--2rem">
                     <label class="grid-column--span-1 display--flex flex-direction--column">
                         <span>Name</span>
                         <input type="text"
@@ -385,7 +447,7 @@
                     <div class="grid-column--span-2 display--flex flex-direction--column">
                         <label>
                             <span>Photo</span><br/>
-                            <img src="/static/image/icon-image.png" alt="" class="icon--64"
+                            <img src="/plain-example/static/image/icon-image.svg" alt="" class="height--2em"
                                  data-duice-bind="user"
                                  data-duice-property="photo"
                                  data-duice-editable="true"/>
