@@ -221,8 +221,16 @@
 </head>
 <body>
     <main>
-        <div id="title">
-            <h1>Master Detail Pattern</h1>
+        <div id="title" class="display--flex justify-content--space-between">
+            <div>
+                <h1>Master Detail Pattern</h1>
+            </div>
+            <div>
+                <label>
+                    <span>Dark Mode</span>
+                    <input type="checkbox" onclick="this.checked ? document.documentElement.classList.add('dark-mode') : document.documentElement.classList.remove('dark-mode');"/>
+                </label>
+            </div>
         </div>
         <div id="master">
             <h2>
