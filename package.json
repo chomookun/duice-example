@@ -1,8 +1,8 @@
 {
   "name": "duice-example",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "DUICE(Data-oriented javascript UI Component Element) Example",
+  "author": "chomookun@gmail.com",
   "private": true,
   "license": "UNLICENSED",
   "workspaces": [
