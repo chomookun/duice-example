@@ -4,6 +4,7 @@
 ```shell
 npm run start:dev
 ```
+open http://localhost:3000
 
 ## Run React example serve (only react source build)
 ```shell

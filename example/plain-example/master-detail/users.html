@@ -8,22 +8,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <title>Users</title>
-    <script src="https://cdn.jsdelivr.net/npm/duice/dist/duice.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/duice/dist/duice.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/duice/dist/duice-theme.css"/>
+    <script src="https://unpkg.com/duice/dist/duice.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/duice/dist/duice.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/duice/dist/duice-theme.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        html {
-            scroll-behavior: smooth;
-        }
         main {
             padding: 2rem;
             display: grid;
             grid-template-areas:
                 'title title'
-                'master detail';
+                'list detail';
             grid-template-columns: 1fr 1fr;
             grid-template-rows: auto;
             gap: 1rem;
@@ -34,7 +31,7 @@
                 display: grid;
                 grid-template-areas:
                 'title'
-                'master'
+                'list'
                 'detail';
                 grid-template-columns: minmax(0,1fr);
                 grid-template-rows: auto;
@@ -44,8 +41,8 @@
         #title {
             grid-area: title;
         }
-        #master {
-            grid-area: master;
+        #list {
+            grid-area: list;
         }
         #detail {
             grid-area: detail;
@@ -66,6 +63,7 @@
             _status: null
         });
         const users = new duice.ArrayProxy([]);
+        duice.ArrayProxy.setReadonlyAll(users, true);
         const user = new duice.ObjectProxy({});
         duice.ObjectProxy.setDisableAll(user, true);
 
@@ -105,20 +103,6 @@
         }
 
         /**
-         * replace history
-         */
-        function replaceHistory() {
-            history.replaceState({ section:'master', userSearch: JSON.stringify(userSearch) }, null);
-        }
-
-        /**
-         * save history
-         */
-        function pushHistory() {
-            history.pushState({ section:'master', userSearch: JSON.stringify(userSearch) }, null, `#${new Date().getTime()}`);
-        }
-
-        /**
          * resets users
          */
         function resetUsers() {
@@ -141,9 +125,6 @@
 
                 // select index in users
                 duice.ArrayProxy.selectItem(users, users.findIndex(it => it.id === user.id));
-
-                // go to detail
-                document.getElementById('detail').scrollIntoView();
             });
         }
 
@@ -206,22 +187,15 @@
         // on dom document loaded
         document.addEventListener('DOMContentLoaded', () => {
             getUsers();
-            replaceHistory();
         });
-
-        // handle popstate
-        window.addEventListener('popstate', (event) => {
-            if (event.state.userSearch) {
-                duice.ObjectProxy.assign(userSearch, JSON.parse(event.state.userSearch));
-                getUsers(userSearch._page);
-            }
-        });
-
     </script>
 </head>
 <body>
     <main>
-        <div id="title" class="display--flex justify-content--space-between">
+        <!-- ====================================== -->
+        <!-- start: title                           -->
+        <!-- ====================================== -->
+        <div id="title" class="display--flex justify-content--space-between flex-wrap--wrap align-items--end">
             <div>
                 <h1>Master Detail Pattern</h1>
             </div>
@@ -232,10 +206,17 @@
                 </label>
             </div>
         </div>
-        <div id="master">
+        <!-- ====================================== -->
+        <!-- end: title                             -->
+        <!-- ====================================== -->
+
+        <!-- ====================================== -->
+        <!-- start: list                          -->
+        <!-- ====================================== -->
+        <div id="list">
             <h2>
                 <i class="fa-solid fa-list"></i>
-                Master
+                List
             </h2>
             <div class="display--flex flex-direction--column gap--1rem">
                 <form onsubmit="return false;" class="display--flex flex-wrap--wrap justify-content--space-between gap--1px">
@@ -279,7 +260,7 @@
                         </div>
                     </div>
                     <div class="flex--1 display--flex justify-content--end gap--1px s__justify-content--start">
-                        <button type="submit" onclick="getUsers(0); pushHistory();" class="btn btn-primary">
+                        <button type="submit" onclick="getUsers(0);" class="btn btn-primary">
                             <i class="fa-solid fa-magnifying-glass"></i>
                             Search
                         </button>
@@ -323,11 +304,11 @@
                         </span>
                             </td>
                             <td>
-                                <img src="/plain-example/static/image/icon-image.svg" alt="" class="height--1rem"
+                                <img src="/plain-example/static/image/icon-image.svg" alt=""
+                                     class="height--1rem"
                                      data-duice-bind="user"
                                      data-duice-property="photo"/>
-                                <span data-duice-bind="user"
-                                      data-duice-property="name"></span>
+                                <span class="font-weight--bold" data-duice-bind="user" data-duice-property="name"></span>
                             </td>
                             <td data-duice-bind="user"
                                 data-duice-property="email">
@@ -402,122 +383,132 @@
                 </div>
             </div>
         </div>
+        <!-- ====================================== -->
+        <!-- end: list                            -->
+        <!-- ====================================== -->
+
+        <!-- ====================================== -->
+        <!-- start: detail                          -->
+        <!-- ====================================== -->
         <div id="detail">
             <h2>
-                <i class="fa-solid fa-envelope-open-text"></i>
+                <i class="fa-regular fa-file"></i>
                 Detail
             </h2>
-            <div class="display--flex flex-direction--column gap--1px padding--1em" style="border:var(--duice-table-border);">
-                <form onsubmit="return false;" class="display--grid grid-template-columns--2fr row-gap--1rem column-gap--2rem">
-                    <label class="grid-column--span-1 display--flex flex-direction--column">
-                        <span>Name</span>
-                        <input type="text"
-                               data-duice-bind="user"
-                               data-duice-property="name">
-                    </label>
-                    <label class="grid-column--span-1 display--flex flex-direction--column">
-                        <span>Password</span>
-                        <input type="password"
-                               data-duice-bind="user"
-                               data-duice-property="password">
-                    </label>
-                    <label class="grid-column--span-1 display--flex flex-direction--column">
-                        <span>Email</span>
-                        <input type="email"
-                               data-duice-bind="user"
-                               data-duice-property="email">
-                    </label>
-                    <label class="grid-column--span-1 display--flex flex-direction--column">
-                        <span>SocialNo</span>
-                        <input type="text"
-                               data-duice-bind="user"
-                               data-duice-property="socialNo" data-duice-format="string('###-##-####')">
-                    </label>
-                    <label class="grid-column--span-1 display--flex flex-direction--column">
-                        <span>Group</span>
-                        <select class="form-select"
-                                data-duice-bind="user"
-                                data-duice-property="groupId">
-                            <option selected>Group...</option>
-                            <option value="human">Human</option>
-                            <option value="animal">Animal</option>
-                            <option value="plant">Plant</option>
-                        </select>
-                    </label>
-                    <div class="grid-column--span-1 align-self--end">
+            <div class="display--flex flex-direction--column gap--1em padding--1em" style="border:var(--duice-table-border);">
+                <form onsubmit="return false;" class="display--grid grid-template-columns--12fr gap--1em">
+                    <div class="grid-column--span-6 s__grid-column--span-12">
+                        <label class="display--flex flex-direction--column">
+                            <span class="font-weight--bold">Name</span>
+                            <input class="font-weight--bold" type="text" data-duice-bind="user" data-duice-property="name">
+                        </label>
+                    </div>
+                    <div class="grid-column--span-6 s__grid-column--span-12">
+                        <label class="display--flex flex-direction--column">
+                            <span>Password</span>
+                            <input type="password" data-duice-bind="user" data-duice-property="password">
+                        </label>
+                    </div>
+                    <div class="grid-column--span-6 s__grid-column--span-12">
+                        <label class="display--flex flex-direction--column">
+                            <span>Email</span>
+                            <input type="email" data-duice-bind="user" data-duice-property="email">
+                        </label>
+                    </div>
+                    <div class="grid-column--span-6 s__grid-column--span-12">
+                        <label class="display--flex flex-direction--column">
+                            <span>SocialNo</span>
+                            <input type="text" data-duice-bind="user" data-duice-property="socialNo" data-duice-format="string('###-##-####')">
+                        </label>
+                    </div>
+                    <div class="grid-column--span-6 s__grid-column--span-12">
+                        <label class="display--flex flex-direction--column">
+                            <span>Group</span>
+                            <select class="form-select" data-duice-bind="user" data-duice-property="groupId">
+                                <option selected>Group...</option>
+                                <option value="human">Human</option>
+                                <option value="animal">Animal</option>
+                                <option value="plant">Plant</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="grid-column--span-6 s__grid-column--span-12 align-self--end">
                         <label>
-                            <input type="checkbox" class="form-checkbox-input"
-                                   data-duice-bind="user"
-                                   data-duice-property="active">
+                            <input type="checkbox" data-duice-bind="user" data-duice-property="active">
                             <span>Active</span>
                         </label>
                     </div>
-                    <div class="grid-column--span-2 display--flex flex-direction--column">
-                        <label>
-                            <span>Photo</span><br/>
-                            <img src="/plain-example/static/image/icon-image.svg" alt="" class="height--2em"
+                    <div class="grid-column--span-6 s__grid-column--span-12 ">
+                        <label class="display--flex flex-direction--column">
+                            <span>Photo</span>
+                            <img src="/plain-example/static/image/icon-image.svg" alt="" class="height--2em width--2em"
                                  data-duice-bind="user"
                                  data-duice-property="photo"
                                  data-duice-editable="true"/>
                         </label>
                     </div>
-                    <label class="grid-column--span-2 display--flex flex-direction--column">
-                        <span>Profile</span>
-                        <textarea data-duice-bind="user" data-duice-property="profile"></textarea>
-                    </label>
-                    <div class="grid-column--span-1 display--flex flex-direction--column">
-                        <span>Gender</span>
-                        <div>
-                            <label>
-                                <input type="radio" value="M"
-                                       data-duice-bind="user"
-                                       data-duice-property="gender"/>
-                                <span>Male</span>
-                            </label>
-                            <label>
-                                <input type="radio" value="F"
-                                       data-duice-bind="user"
-                                       data-duice-property="gender"/>
-                                <span>Female</span>
-                            </label>
+                    <div class="grid-column--span-6 s__grid-column--span-12">
+                        <label class="display--flex flex-direction--column">
+                            <span>Profile</span>
+                            <textarea data-duice-bind="user" data-duice-property="profile"></textarea>
+                        </label>
+                    </div>
+                    <div class="grid-column--span-6 s__grid-column--span-12">
+                        <div class="display--flex flex-direction--column">
+                            <span>Gender</span>
+                            <div>
+                                <label>
+                                    <input type="radio" value="M"
+                                           data-duice-bind="user"
+                                           data-duice-property="gender"/>
+                                    <span>Male</span>
+                                </label>
+                                <label>
+                                    <input type="radio" value="F"
+                                           data-duice-bind="user"
+                                           data-duice-property="gender"/>
+                                    <span>Female</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-
-                    <label class="grid-column--span-1 display--flex flex-direction--column">
-                        <span>DateTime</span>
-                        <input type="datetime-local"
-                               data-duice-bind="user"
-                               data-duice-property="dateTime">
-                    </label>
-                    <label class="grid-column--span-1 display--flex flex-direction--column">
-                        <span>Date</span>
-                        <input type="date"
-                               data-duice-bind="user"
-                               data-duice-property="date">
-                    </label>
-                    <label class="grid-column--span-1 display--flex flex-direction--column">
-                        <span>Time</span>
-                        <input type="time"
-                               data-duice-bind="user"
-                               data-duice-property="time">
-                    </label>
-                    <div class="grid-column--span-2 justify-self--end">
-                        <button type="button" onclick="deleteUser();"
-                                data-duice-bind="user"
-                                data-duice-execute="Object.keys(user).length < 1 ? this.disabled=true: this.disabled=false;">
-                            <i class="fa-regular fa-trash-can"></i>
-                            Delete
-                        </button>
-                        <button type="submit" onclick="saveUser();"
-                                data-duice-bind="user"
-                                data-duice-execute="Object.keys(user).length < 1 ? this.disabled=true: this.disabled=false;">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            Save
-                        </button>
+                    <div class="grid-column--span-6 s__grid-column--span-12">
+                        <label class="display--flex flex-direction--column">
+                            <span>DateTime</span>
+                            <input type="datetime-local" data-duice-bind="user" data-duice-property="dateTime">
+                        </label>
+                    </div>
+                    <div class="grid-column--span-6 s__grid-column--span-12">
+                        <label class="display--flex flex-direction--column">
+                            <span>Date</span>
+                            <input type="date" data-duice-bind="user" data-duice-property="date">
+                        </label>
+                    </div>
+                    <div class="grid-column--span-6 s__grid-column--span-12">
+                        <label class="display--flex flex-direction--column">
+                            <span>Time</span>
+                            <input type="time" data-duice-bind="user" data-duice-property="time">
+                        </label>
                     </div>
                 </form>
+                <div class="display--flex justify-content--space-between">
+                    <div></div>
+                    <div class="display--flex gap--1px justify-content--end">
+                        <button type="button" onclick="deleteUser();" data-duice-bind="user"
+                                data-duice-execute="Object.keys(user).length < 1 ? this.disabled=true: this.disabled=false;">
+                            <i class="fa-regular fa-trash-can"></i> Delete
+                        </button>
+                        <button type="submit" onclick="saveUser();" data-duice-bind="user"
+                                data-duice-execute="Object.keys(user).length < 1 ? this.disabled=true: this.disabled=false;">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Save
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
+        <!-- ====================================== -->
+        <!-- end: detail                            -->
+        <!-- ====================================== -->
     </main>
 </body>
 </html>

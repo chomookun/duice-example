@@ -2,9 +2,259 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>User</title>
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <title>Users</title>
+    <script src="https://unpkg.com/duice@latest/dist/duice.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/duice@latest/dist/duice.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/duice@latest/dist/duice-theme.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        main {
+            padding: 2rem;
+            display: grid;
+            grid-template-areas:
+                'title'
+                'detail';
+            grid-template-columns: 1fr;
+            grid-template-rows: auto;
+            gap: 1rem;
+        }
+        @media screen and (max-width: 1023px) {
+
+        }
+        #detail {
+            grid-area: detail;
+        }
+    </style>
+    <script>
+        // defines
+        const user = new duice.ObjectProxy({});
+
+        /**
+         * gets specific user
+         * @param id user id
+         */
+        function getUser(id) {
+            let url = new URL(`/api/users/${id}`, location.origin);
+            fetch(url).then(response => response.json())
+                .then(data => {
+                    duice.ObjectProxy.assign(user, data);
+                });
+        }
+
+        /**
+         * Saves user
+         */
+        async function saveUser() {
+            // Checks validation
+            if (!user.name) {
+                new duice.AlertDialog('Please enter name').open().then(()=>{
+                    duice.ObjectProxy.focus(user, 'name');
+                });
+                return;
+            }
+            // Fires confirm message
+            if (!await new duice.ConfirmDialog(`<i class="fa-solid fa-circle-exclamation font-size--x-large"></i><br/>Do you want to save user?`).open()) {
+                return;
+            }
+            // Calls service
+            let url;
+            let method;
+            if (this.user.id) {
+                url = `/api/users/${user.id}`;
+                method = 'PUT';
+            } else {
+                url = `/api/users`;
+                method = 'POST';
+            }
+            fetch(new URL(url, location.origin), {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(this.user)
+            }).then(response => response.json())
+                .then(data => {
+                    // Fires completion message
+                    new duice.AlertDialog('saved ok').open()
+                        .then(() => {
+                            this.dialog.close(true);
+                        });
+                });
+        }
+
+        /**
+         * Deletes user
+         */
+        async function deleteUser() {
+            if (!await new duice.ConfirmDialog(`<i class="fa-solid fa-triangle-exclamation font-size--x-large"></i><br/>Do you want to delete user?`).open()) {
+                return;
+            }
+            fetch(new URL(`/api/users/${user.id}`, location.origin), {
+                method: 'DELETE'
+            }).then(() => {
+                new duice.AlertDialog('deleted').open()
+                    .then(() => {
+                        this.dialog.close(true);
+                    });
+            });
+        }
+
+        // on dom document loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlSearchParams = new URLSearchParams(location.search);
+            if (urlSearchParams.has('id')) {
+                getUser(urlSearchParams.get('id'));
+            }
+        });
+    </script>
 </head>
 <body>
+<main>
+    <!-- ====================================== -->
+    <!-- start: title                           -->
+    <!-- ====================================== -->
+    <div id="title" class="display--flex justify-content--space-between align-items--end">
+        <div>
+            <h1>Hub And Spoke Pattern</h1>
+        </div>
+        <div>
+            <label>
+                <span>Dark Mode</span>
+                <input type="checkbox" onclick="this.checked ? document.documentElement.classList.add('dark-mode') : document.documentElement.classList.remove('dark-mode');"/>
+            </label>
+        </div>
+    </div>
+    <!-- ====================================== -->
+    <!-- end: title                             -->
+    <!-- ====================================== -->
 
+    <!-- ====================================== -->
+    <!-- start: detail                          -->
+    <!-- ====================================== -->
+    <div id="detail">
+        <h2>
+            <i class="fa-regular fa-file"></i>
+            Detail
+        </h2>
+        <div class="display--flex flex-direction--column gap--1em padding--1em" style="border:var(--duice-table-border);">
+            <form onsubmit="return false;" class="display--grid grid-template-columns--12fr gap--1em">
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span class="font-weight--bold">Name</span>
+                        <input class="font-weight--bold" type="text" data-duice-bind="user" data-duice-property="name">
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>Password</span>
+                        <input type="password" data-duice-bind="user" data-duice-property="password">
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>Email</span>
+                        <input type="email" data-duice-bind="user" data-duice-property="email">
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>SocialNo</span>
+                        <input type="text" data-duice-bind="user" data-duice-property="socialNo" data-duice-format="string('###-##-####')">
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>Group</span>
+                        <select class="form-select" data-duice-bind="user" data-duice-property="groupId">
+                            <option selected>Group...</option>
+                            <option value="human">Human</option>
+                            <option value="animal">Animal</option>
+                            <option value="plant">Plant</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12 align-self--end">
+                    <label>
+                        <input type="checkbox" data-duice-bind="user" data-duice-property="active">
+                        <span>Active</span>
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12 ">
+                    <label class="display--flex flex-direction--column">
+                        <span>Photo</span>
+                        <img src="/plain-example/static/image/icon-image.svg" alt="" class="height--2em width--2em"
+                             data-duice-bind="user"
+                             data-duice-property="photo"
+                             data-duice-editable="true"/>
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>Profile</span>
+                        <textarea data-duice-bind="user" data-duice-property="profile"></textarea>
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <div class="display--flex flex-direction--column">
+                        <span>Gender</span>
+                        <div>
+                            <label>
+                                <input type="radio" value="M"
+                                       data-duice-bind="user"
+                                       data-duice-property="gender"/>
+                                <span>Male</span>
+                            </label>
+                            <label>
+                                <input type="radio" value="F"
+                                       data-duice-bind="user"
+                                       data-duice-property="gender"/>
+                                <span>Female</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>DateTime</span>
+                        <input type="datetime-local" data-duice-bind="user" data-duice-property="dateTime">
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>Date</span>
+                        <input type="date" data-duice-bind="user" data-duice-property="date">
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>Time</span>
+                        <input type="time" data-duice-bind="user" data-duice-property="time">
+                    </label>
+                </div>
+            </form>
+            <div class="display--flex justify-content--space-between">
+                <div></div>
+                <div class="display--flex gap--1px justify-content--end">
+                    <button type="button" onclick="deleteUser();" data-duice-bind="user"
+                            data-duice-execute="Object.keys(user).length < 1 ? this.disabled=true: this.disabled=false;">
+                        <i class="fa-regular fa-trash-can"></i> Delete
+                    </button>
+                    <button type="submit" onclick="saveUser();" data-duice-bind="user"
+                            data-duice-execute="Object.keys(user).length < 1 ? this.disabled=true: this.disabled=false;">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ====================================== -->
+    <!-- end: detail                            -->
+    <!-- ====================================== -->
+</main>
 </body>
 </html>

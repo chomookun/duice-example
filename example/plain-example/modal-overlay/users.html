@@ -20,13 +20,13 @@
             display: grid;
             grid-template-areas:
                 'title'
-                'detail';
+                'list';
             grid-template-columns: 1fr;
             grid-template-rows: auto;
             gap: 1rem;
         }
-        #detail {
-            grid-area: detail;
+        #list {
+            grid-area: list;
         }
     </style>
     <script>
@@ -90,14 +90,22 @@
          * @param id
          */
         function getUser(id) {
-            location.href = `user.html?id=${id}`;
+            userDialog.open(id).then(value => {
+                if (value) {
+                    getUsers(userSearch._page);
+                }
+            });
         }
 
         /**
          * Creates user
          */
         function createUser() {
-            location.href = `user.html`;
+            userDialog.open().then(value => {
+                if (value) {
+                    getUsers(0);
+                }
+            });
         }
 
         // on dom document loaded
@@ -111,9 +119,9 @@
     <!-- ====================================== -->
     <!-- start: title                           -->
     <!-- ====================================== -->
-    <div id="title" class="display--flex justify-content--space-between align-items--end">
+    <div id="title" class="display--flex justify-content--space-between flex-wrap--wrap align-items--end">
         <div>
-            <h1>Hub And Spoke Pattern</h1>
+            <h1>Modal Overlay Pattern</h1>
         </div>
         <div>
             <label>
@@ -335,6 +343,225 @@
     <!-- ====================================== -->
     <!-- end: list                              -->
     <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: user-dialog                     -->
+    <!-- ====================================== -->
+    <dialog id="userDialog">
+        <style>
+            #userDialog {
+                width: 800px;
+                padding: 2rem;
+            }
+        </style>
+        <script>
+            const userDialog = {
+                dialog: new duice.Dialog(document.getElementById('userDialog')),
+                user: new duice.ObjectProxy({}),
+                open: async function (id) {
+                    duice.ObjectProxy.clear(this.user);
+                    if (id) {
+                        await this.getUser(id);
+                        duice.ObjectProxy.setReadonly(this.user, 'name', true);
+                    } else {
+                        this.user._new = true;
+                        duice.ObjectProxy.setReadonly(this.user, 'name', false);
+                    }
+                    return this.dialog.open();
+                },
+                /**
+                 * gets specific user
+                 * @param id user id
+                 */
+                getUser: function(id) {
+                    duice.ObjectProxy.clear(this.user);
+                    let url = new URL(`/api/users/${id}`, location.origin);
+                    fetch(url).then(response => response.json())
+                        .then(data => {
+                            duice.ObjectProxy.assign(this.user, data);
+                        });
+                },
+                /**
+                 * Saves user
+                 * @returns {Promise<void>}
+                 */
+                saveUser: async function() {
+                    // Checks validation
+                    if (!this.user.name) {
+                        new duice.AlertDialog('Please enter name').open().then(()=>{
+                            duice.ObjectProxy.focus(this.user, 'name');
+                        });
+                        return;
+                    }
+                    // Fires confirm message
+                    if (!await new duice.ConfirmDialog(`<i class="fa-solid fa-circle-exclamation font-size--x-large"></i><br/>Do you want to save user?`).open()) {
+                        return;
+                    }
+                    // Calls service
+                    let url;
+                    let method;
+                    if (this.user.id) {
+                        url = `/api/users/${this.user.id}`;
+                        method = 'PUT';
+                    } else {
+                        url = `/api/users`;
+                        method = 'POST';
+                    }
+                    fetch(new URL(url, location.origin), {
+                        method: method,
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(this.user)
+                    }).then(response => response.json())
+                        .then(data => {
+                            // Fires completion message
+                            new duice.AlertDialog('saved ok').open()
+                                .then(() => {
+                                    this.dialog.close(true);
+                                });
+                        });
+                },
+                /**
+                 * Deletes user
+                 * @returns {Promise<void>}
+                 */
+                deleteUser: async function() {
+                    if (!await new duice.ConfirmDialog(`<i class="fa-solid fa-triangle-exclamation font-size--x-large"></i><br/>Do you want to delete user?`).open()) {
+                        return;
+                    }
+                    fetch(new URL(`/api/users/${this.user.id}`, location.origin), {
+                        method: 'DELETE'
+                    }).then(() => {
+                        new duice.AlertDialog('deleted').open()
+                            .then(() => {
+                                this.dialog.close(true);
+                            });
+                    });
+                }
+            };
+        </script>
+        <div>
+            <h2>
+                <i class="fa-regular fa-file"></i>
+                Detail
+            </h2>
+        </div>
+        <div class="display--flex flex-direction--column gap--1em">
+            <form onsubmit="return false;" class="display--grid grid-template-columns--12fr gap--1em">
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span class="font-weight--bold">Name</span>
+                        <input class="font-weight--bold" type="text" data-duice-bind="userDialog.user" data-duice-property="name">
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>Password</span>
+                        <input type="password" data-duice-bind="userDialog.user" data-duice-property="password">
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>Email</span>
+                        <input type="email" data-duice-bind="userDialog.user" data-duice-property="email">
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>SocialNo</span>
+                        <input type="text" data-duice-bind="userDialog.user" data-duice-property="socialNo" data-duice-format="string('###-##-####')">
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>Group</span>
+                        <select class="form-select" data-duice-bind="userDialog.user" data-duice-property="groupId">
+                            <option selected>Group...</option>
+                            <option value="human">Human</option>
+                            <option value="animal">Animal</option>
+                            <option value="plant">Plant</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12 align-self--end">
+                    <label>
+                        <input type="checkbox" data-duice-bind="userDialog.user" data-duice-property="active">
+                        <span>Active</span>
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12 ">
+                    <label class="display--flex flex-direction--column">
+                        <span>Photo</span>
+                        <img src="/plain-example/static/image/icon-image.svg" alt="" class="height--2em width--2em"
+                             data-duice-bind="userDialog.user"
+                             data-duice-property="photo"
+                             data-duice-editable="true"/>
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>Profile</span>
+                        <textarea data-duice-bind="userDialog.user" data-duice-property="profile"></textarea>
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <div class="display--flex flex-direction--column">
+                        <span>Gender</span>
+                        <div>
+                            <label>
+                                <input type="radio" value="M"
+                                       data-duice-bind="userDialog.user"
+                                       data-duice-property="gender"/>
+                                <span>Male</span>
+                            </label>
+                            <label>
+                                <input type="radio" value="F"
+                                       data-duice-bind="userDialog.user"
+                                       data-duice-property="gender"/>
+                                <span>Female</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>DateTime</span>
+                        <input type="datetime-local" data-duice-bind="userDialog.user" data-duice-property="dateTime">
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>Date</span>
+                        <input type="date" data-duice-bind="userDialog.user" data-duice-property="date">
+                    </label>
+                </div>
+                <div class="grid-column--span-6 s__grid-column--span-12">
+                    <label class="display--flex flex-direction--column">
+                        <span>Time</span>
+                        <input type="time" data-duice-bind="userDialog.user" data-duice-property="time">
+                    </label>
+                </div>
+            </form>
+            <div class="display--flex justify-content--space-between">
+                <div></div>
+                <div class="display--flex gap--1px justify-content--end">
+                    <button type="button" onclick="userDialog.deleteUser();"
+                            data-duice-bind="userDialog.user"
+                            data-duice-execute="this.disabled=userDialog.user._new;">
+                        <i class="fa-regular fa-trash-can"></i> Delete
+                    </button>
+                    <button type="submit" onclick="userDialog.saveUser();"
+                            data-duice-bind="userDialog.user"
+                            data-duice-execute="">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </dialog>
+    <!-- ====================================== -->
+    <!-- end: detail-dialog                     -->
+    <!-- ====================================== -->
+
 </main>
 </body>
 </html>
