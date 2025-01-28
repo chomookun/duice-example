@@ -362,10 +362,6 @@
                     duice.ObjectProxy.clear(this.user);
                     if (id) {
                         await this.getUser(id);
-                        duice.ObjectProxy.setReadonly(this.user, 'name', true);
-                    } else {
-                        this.user._new = true;
-                        duice.ObjectProxy.setReadonly(this.user, 'name', false);
                     }
                     return this.dialog.open();
                 },

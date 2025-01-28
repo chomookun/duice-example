@@ -60,7 +60,7 @@
                 return;
             }
             // Fires confirm message
-            if (!await new duice.ConfirmDialog(`<i class="fa-solid fa-circle-exclamation font-size--x-large"></i><br/>Do you want to save user?`).open()) {
+            if (!await new duice.ConfirmDialog(`<i class="fa-solid fa-circle-question font-size--x-large"></i><br/>Do you want to save user?`).open()) {
                 return;
             }
             // Calls service
@@ -80,9 +80,13 @@
             }).then(response => response.json())
                 .then(data => {
                     // Fires completion message
-                    new duice.AlertDialog('saved ok').open()
+                    new duice.AlertDialog(`<i class="fa-solid fa-circle-exclamation font-size--x-large"></i><br/>saved ok`).open()
                         .then(() => {
-                            history.back();
+                            if (user.id) {
+                                history.back();
+                            } else {
+                                location.href = 'users.html';
+                            }
                         });
                 });
         }
@@ -91,13 +95,13 @@
          * Deletes user
          */
         async function deleteUser() {
-            if (!await new duice.ConfirmDialog(`<i class="fa-solid fa-triangle-exclamation font-size--x-large"></i><br/>Do you want to delete user?`).open()) {
+            if (!await new duice.ConfirmDialog(`<i class="fa-solid fa-circle-question font-size--x-large"></i><br/>Do you want to delete user?`).open()) {
                 return;
             }
             fetch(new URL(`/api/users/${user.id}`, location.origin), {
                 method: 'DELETE'
             }).then(() => {
-                new duice.AlertDialog('deleted').open()
+                new duice.AlertDialog(`<i class="fa-solid fa-circle-exclamation font-size--x-large"></i><br/>deleted`).open()
                     .then(() => {
                         history.back();
                     });
