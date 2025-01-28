@@ -100,9 +100,45 @@
             location.href = `user.html`;
         }
 
-        // on dom document loaded
+        /**
+         * Push url search params
+         */
+        function pushUrlSearchParams() {
+            const url = new URL(location.href);
+            if (userSearch.key) url.searchParams.set('key', userSearch.key);
+            if (userSearch.value) url.searchParams.set('value', userSearch.value);
+            if (userSearch.groupId) url.searchParams.set('groupId', userSearch.groupId);
+            if (userSearch.active != null) url.searchParams.set('active', userSearch.active);
+            if (userSearch._page) url.searchParams.set('_page', userSearch._page);
+            if (userSearch._size) url.searchParams.set('_size', userSearch._size);
+            history.pushState({ time: new Date().getTime() }, null, url);
+        }
+
+        /**
+         * Load url search params
+         */
+        function loadUrlSearchParams() {
+            const url = new URL(location.href);
+            duice.ObjectProxy.reset(userSearch);
+            if (url.searchParams.get('key')) userSearch.key = url.searchParams.get('key');
+            if (url.searchParams.get('value')) userSearch.value = url.searchParams.get('value');
+            if (url.searchParams.get('groupId')) userSearch.groupId = url.searchParams.get('groupId');
+            if (url.searchParams.get('active')) userSearch.active = Boolean(url.searchParams.get('active'));
+            if (url.searchParams.get('_page')) userSearch._page = Number(url.searchParams.get('_page'));
+            if (url.searchParams.get('_size')) userSearch._size = Number(url.searchParams.get('_size'));
+        }
+
+        // On dom document loaded
         document.addEventListener('DOMContentLoaded', () => {
+            loadUrlSearchParams();
             getUsers();
+        });
+
+        // history event
+        ['popstate', 'pageshow'].forEach(event => {
+            window.addEventListener(event, () => {
+                document.dispatchEvent(new CustomEvent('DOMContentLoaded'));
+            });
         });
     </script>
 </head>
@@ -176,11 +212,11 @@
                     </div>
                 </div>
                 <div class="flex--1 display--flex justify-content--end gap--1px s__justify-content--start">
-                    <button type="submit" onclick="getUsers(0);" class="btn btn-primary">
+                    <button type="submit" onclick="getUsers(0); pushUrlSearchParams()" class="btn btn-primary">
                         <i class="fa-solid fa-magnifying-glass"></i>
                         Search
                     </button>
-                    <button type="button" onclick="resetUsers();" class="btn btn-secondary">
+                    <button type="button" onclick="resetUsers(); pushUrlSearchParams();" class="btn btn-secondary">
                         <i class="fa-solid fa-rotate-right"></i>
                         Reset
                     </button>
@@ -223,7 +259,7 @@
                             </span>
                         </td>
                         <td>
-                            <a href="#!"
+                            <a href="javascript:void(0);"
                                data-duice-bind="user"
                                data-duice-execute="this.dataset.id=user.id;"
                                onclick="getUser(this.dataset.id);">
@@ -311,13 +347,13 @@
             <div class="display--flex justify-content--space-between">
                 <div></div>
                 <div>
-                    <button type="button" onclick="getUsers(userSearch._page-1);"
+                    <button type="button" onclick="getUsers(userSearch._page-1); pushUrlSearchParams();"
                             data-duice-bind="users"
                             data-duice-execute="userSearch._page < 1 ? this.disabled=true : this.disabled=false;">
                         <i class="fa-solid fa-chevron-left"></i>
                     </button>
                     <span data-duice-bind="userSearch" data-duice-execute="this.innerHTML=userSearch._page+1" class="padding--1rem"></span>
-                    <button type="button" onclick="getUsers(userSearch._page+1);"
+                    <button type="button" onclick="getUsers(userSearch._page+1); pushUrlSearchParams();"
                             data-duice-bind="users"
                             data-duice-execute="users.length < userSearch._size ? this.disabled=true : this.disabled=false;">
                         <i class="fa-solid fa-chevron-right"></i>

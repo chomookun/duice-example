@@ -66,7 +66,7 @@
             // Calls service
             let url;
             let method;
-            if (this.user.id) {
+            if (user.id) {
                 url = `/api/users/${user.id}`;
                 method = 'PUT';
             } else {
@@ -76,13 +76,13 @@
             fetch(new URL(url, location.origin), {
                 method: method,
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(this.user)
+                body: JSON.stringify(user)
             }).then(response => response.json())
                 .then(data => {
                     // Fires completion message
                     new duice.AlertDialog('saved ok').open()
                         .then(() => {
-                            this.dialog.close(true);
+                            history.back();
                         });
                 });
         }
@@ -99,7 +99,7 @@
             }).then(() => {
                 new duice.AlertDialog('deleted').open()
                     .then(() => {
-                        this.dialog.close(true);
+                        history.back();
                     });
             });
         }
@@ -110,6 +110,13 @@
             if (urlSearchParams.has('id')) {
                 getUser(urlSearchParams.get('id'));
             }
+        });
+
+        // history event
+        ['popstate', 'pageshow'].forEach(event => {
+            window.addEventListener(event, () => {
+                document.dispatchEvent(new CustomEvent('DOMContentLoaded'));
+            });
         });
     </script>
 </head>

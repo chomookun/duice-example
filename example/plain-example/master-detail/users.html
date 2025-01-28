@@ -122,6 +122,7 @@
             .then(data => {
                 duice.ObjectProxy.assign(user, data);
                 duice.ObjectProxy.setDisableAll(user, false);
+                duice.ObjectProxy.setReadonly(user, 'name', true);
 
                 // select index in users
                 duice.ArrayProxy.selectItem(users, users.findIndex(it => it.id === user.id));
@@ -134,6 +135,7 @@
         function createUser() {
             duice.ObjectProxy.clear(user);
             duice.ObjectProxy.assign(user, {});
+            duice.ObjectProxy.setReadonlyAll(user, false);
         }
 
         /**
