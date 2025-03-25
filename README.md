@@ -1,5 +1,15 @@
 # Duice Example
 
+## NPM link to duice library (Optional)
+```shell
+git clone https://github.com/chomookun/duice.git
+git clone https://github.com/chomookun/duice-example.git
+cd duice
+npm link
+cd duice-example
+npm link duice
+```
+
 ## Run NextJs server
 ```shell
 npm run start:dev

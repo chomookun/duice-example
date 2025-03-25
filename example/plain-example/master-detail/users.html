@@ -8,9 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <title>Users</title>
-    <script src="https://unpkg.com/duice/dist/duice.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/duice/dist/duice.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/duice/dist/duice-theme.css"/>
+    <script src="/static/duice/duice.js"></script>
+    <link rel="stylesheet" href="/static/duice/duice.css"/>
+    <link rel="stylesheet" href="/static/duice/duice-theme.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -65,7 +65,7 @@
         const users = new duice.ArrayProxy([]);
         duice.ArrayProxy.setReadonlyAll(users, true);
         const user = new duice.ObjectProxy({});
-        duice.ObjectProxy.setDisableAll(user, true);
+        duice.ObjectProxy.setDisabledAll(user, true);
 
         /**
          * gets users
@@ -121,7 +121,7 @@
             .then(response => response.json())
             .then(data => {
                 duice.ObjectProxy.assign(user, data);
-                duice.ObjectProxy.setDisableAll(user, false);
+                duice.ObjectProxy.setDisabledAll(user, false);
             });
         }
 
@@ -184,7 +184,7 @@
                 new duice.AlertDialog(`<i class="fa-solid fa-circle-exclamation font-size--x-large"></i><br/>deleted ok`).open()
                     .then(() => {
                         duice.ObjectProxy.clear(user);
-                        duice.ObjectProxy.setDisableAll(user, true);
+                        duice.ObjectProxy.setDisabledAll(user, true);
                         getUsers();
                     });
             });
