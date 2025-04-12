@@ -16,7 +16,15 @@ export class ApiService {
 
     async onModuleInit() {
         this.mongoServer = await MongoMemoryServer.create({
-            binary: {}
+            instance: {
+                dbName: 'test',
+                storageEngine: 'ephemeralForTest',
+                args: ['--nojournal']
+            },
+            binary: {
+                version: '4.4.10',
+                checkMD5: false
+            }
         });
         this.mongoClient= new MongoClient(this.mongoServer.getUri());
         await this.mongoClient.connect();
