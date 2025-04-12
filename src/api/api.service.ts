@@ -18,11 +18,11 @@ export class ApiService {
         this.mongoServer = await MongoMemoryServer.create({
             instance: {
                 dbName: 'test',
-                storageEngine: 'ephemeralForTest',
-                args: ['--nojournal']
+                storageEngine: 'wiredTiger',
+                args: ['--nojournal', '--nssize=1', '--smallfiles']
             },
             binary: {
-                version: '4.4.10',
+                version: '4.0.3',
                 checkMD5: false
             }
         });
