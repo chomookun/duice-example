@@ -141,7 +141,7 @@ function MasterDetail() {
             </thead>
             <tbody>
               <tr data-duice-bind="users" 
-                  data-duice-loop="user,status"
+                  data-duice-foreach="user,status"
                   data-duice-execute="
                   this.dataset.id=user.id; 
                   this.addEventListener('click', () => {

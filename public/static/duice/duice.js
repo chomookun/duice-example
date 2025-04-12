@@ -69,6 +69,16 @@ var duice = (function (exports) {
         return value !== Object(value);
     }
     /**
+     * Checks object is proxy
+     * @param object
+     */
+    function isProxy(object) {
+        if (object == null) {
+            return false;
+        }
+        return globalThis.Object.getOwnPropertyDescriptor(object, '_proxy_target_') != null;
+    }
+    /**
      * Sets proxy target
      * @param proxy
      * @param target
@@ -103,13 +113,6 @@ var duice = (function (exports) {
      */
     function getProxyHandler(proxy) {
         return globalThis.Object.getOwnPropertyDescriptor(proxy, '_proxy_handler_').value;
-    }
-    /**
-     * Checks object is proxy
-     * @param object
-     */
-    function isProxy(object) {
-        return globalThis.Object.getOwnPropertyDescriptor(object, '_proxy_target_') != null;
     }
     /**
      * Gets element query selector
@@ -149,8 +152,7 @@ var duice = (function (exports) {
             }
         }
         catch (ignore) { }
-        // throw error
-        console.warn(`Object[${name}] is not found`);
+        // return default
         return undefined;
     }
     /**
@@ -488,6 +490,7 @@ var duice = (function (exports) {
          */
         setParent(parent) {
             this.parent = parent;
+            this.addObserver(parent);
             parent.addObserver(this);
             this.eventDispatcher.setParent(parent.eventDispatcher);
         }
@@ -1050,7 +1053,8 @@ var duice = (function (exports) {
             }
             // run if code
             runIfCode(this.htmlElement, context).then(result => {
-                if (result == false) {
+                // checks result
+                if (result === false) {
                     return;
                 }
                 let objectProxyHandler = getProxyHandler(this.getBindData());
@@ -1389,7 +1393,7 @@ var duice = (function (exports) {
          */
         update(observable, event) {
             debug('ArrayProxyHandler.update', observable, event);
-            // instance is array component
+            // observable is array element
             if (observable instanceof ArrayElement) {
                 // item selecting event
                 if (event instanceof ItemSelectingEvent) {
@@ -1417,6 +1421,12 @@ var duice = (function (exports) {
                         this.notifyObservers(itemMovedEvent);
                         this.dispatchEventListeners(itemMovedEvent).then();
                     });
+                }
+            }
+            // observable is object proxy handler
+            if (observable instanceof ObjectProxyHandler) {
+                if (event instanceof PropertyChangedEvent) {
+                    this.notifyObservers(event);
                 }
             }
         }
@@ -2101,8 +2111,8 @@ var duice = (function (exports) {
             this.slot = document.createElement('slot');
             this.itemHtmlElements = [];
             // attributes
-            this.loop = getElementAttribute(htmlElement, 'loop');
-            this.hierarchy = getElementAttribute(htmlElement, 'hierarchy');
+            this.foreach = getElementAttribute(htmlElement, 'foreach');
+            this.recursive = getElementAttribute(htmlElement, 'recursive');
             this.editable = (getElementAttribute(htmlElement, 'editable') === 'true');
             this.selectedItemClass = getElementAttribute(htmlElement, 'selected-item-class');
             // replace with slot for position
@@ -2121,17 +2131,16 @@ var duice = (function (exports) {
                 rowElement.parentNode.removeChild(rowElement);
             });
             this.itemHtmlElements.length = 0;
-            // loop
-            if (this.loop) {
-                let loopArgs = this.loop.split(',');
-                let itemName = loopArgs[0].trim();
-                let statusName = (_a = loopArgs[1]) === null || _a === void 0 ? void 0 : _a.trim();
-                // hierarchy loop
-                if (this.hierarchy) {
-                    let hierarchyArray = this.hierarchy.split(',');
-                    let idName = hierarchyArray[0];
-                    let parentIdName = hierarchyArray[1];
-                    //let index = -1;
+            // foreach
+            if (this.foreach) {
+                let foreachArgs = this.foreach.split(',');
+                let itemName = foreachArgs[0].trim();
+                let statusName = (_a = foreachArgs[1]) === null || _a === void 0 ? void 0 : _a.trim();
+                // recursive loop
+                if (this.recursive) {
+                    let recursiveArgs = this.recursive.split(',');
+                    let idName = recursiveArgs[0];
+                    let parentIdName = recursiveArgs[1];
                     const _this = this;
                     // visit function
                     let visit = function (array, parentId, depth) {
@@ -2160,7 +2169,7 @@ var duice = (function (exports) {
                     // start visit
                     visit(arrayProxy, null, 0);
                 }
-                // default loop
+                // default foreach
                 else {
                     // normal
                     for (let index = 0; index < arrayProxy.length; index++) {
@@ -2181,7 +2190,7 @@ var duice = (function (exports) {
                     }
                 }
             }
-            // not loop
+            // not foreach
             else {
                 // initialize
                 let itemHtmlElement = this.getHtmlElement().cloneNode(true);
@@ -2191,9 +2200,12 @@ var duice = (function (exports) {
                 // append to slot
                 this.slot.parentNode.insertBefore(itemHtmlElement, this.slot);
                 // check if
-                runIfCode(itemHtmlElement, context);
-                // execute script
-                runExecuteCode(itemHtmlElement, context);
+                runIfCode(itemHtmlElement, context).then(result => {
+                    if (result === false) {
+                        return;
+                    }
+                    runExecuteCode(itemHtmlElement, context).then();
+                });
             }
         }
         /**
@@ -2246,7 +2258,9 @@ var duice = (function (exports) {
             });
             // check if code
             runIfCode(itemHtmlElement, context).then(result => {
-                // execute script
+                if (result === false) {
+                    return;
+                }
                 runExecuteCode(itemHtmlElement, context).then();
             });
         }
@@ -2257,6 +2271,7 @@ var duice = (function (exports) {
          */
         update(observable, event) {
             debug('ArrayElement.update', observable, event);
+            // if observable is array proxy handler
             if (observable instanceof ArrayProxyHandler) {
                 // item selected event
                 if (event instanceof ItemSelectedEvent) {
@@ -2278,6 +2293,21 @@ var duice = (function (exports) {
                 if (event instanceof ItemMovedEvent) {
                     this.render();
                     return;
+                }
+                // property change event
+                if (event instanceof PropertyChangedEvent) {
+                    // if recursive and parent is changed, render array element
+                    if (this.recursive) {
+                        let parentId = this.recursive.split(',')[1];
+                        if (event.getProperty() === parentId) {
+                            this.render();
+                            return;
+                        }
+                    }
+                    // default is no-op
+                    else {
+                        return;
+                    }
                 }
             }
             // default
@@ -2416,7 +2446,8 @@ var duice = (function (exports) {
                             }
                         }
                         catch (e) {
-                            console.error(e, htmlElement, container, JSON.stringify(context));
+                            console.error(e, htmlElement.outerHTML, context);
+                            // console.error(e, htmlElement, container, JSON.stringify(context));
                         }
                     }
                 }
@@ -3008,13 +3039,13 @@ var duice = (function (exports) {
          * Overrides render
          */
         render() {
+            this.createOptions();
             super.render();
-            this.updateOptions();
         }
         /**
          * Updates options
          */
-        updateOptions() {
+        createOptions() {
             let value = this.getHtmlElement().value;
             this.getHtmlElement().innerHTML = '';
             this.defaultOptions.forEach(defaultOption => {
@@ -3022,12 +3053,14 @@ var duice = (function (exports) {
             });
             if (this.option) {
                 let optionArray = findVariable(this.getContext(), this.option);
-                optionArray.forEach(it => {
-                    let option = document.createElement('option');
-                    option.value = it[this.optionValueProperty];
-                    option.appendChild(document.createTextNode(it[this.optionTextProperty]));
-                    this.getHtmlElement().appendChild(option);
-                });
+                if (optionArray) {
+                    optionArray.forEach(it => {
+                        let option = document.createElement('option');
+                        option.value = it[this.optionValueProperty];
+                        option.appendChild(document.createTextNode(it[this.optionTextProperty]));
+                        this.getHtmlElement().appendChild(option);
+                    });
+                }
             }
             this.getHtmlElement().value = value;
         }
