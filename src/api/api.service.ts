@@ -19,11 +19,20 @@ export class ApiService {
             instance: {
                 dbName: 'test',
                 storageEngine: 'wiredTiger',
-                args: ['--nojournal', '--nssize=1', '--smallfiles']
+                args: [
+                    '--nojournal',
+                    '--nssize=1',
+                    '--smallfiles',
+                    '--quiet'
+                ]
             },
             binary: {
                 version: '4.0.3',
                 checkMD5: false
+            },
+            spawn: {
+                detached: false,
+                stdio: 'ignore',
             }
         });
         this.mongoClient= new MongoClient(this.mongoServer.getUri());
