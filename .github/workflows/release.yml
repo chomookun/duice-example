@@ -1,24 +1,19 @@
-name: arch4j-release
-
+name: release
 on:
   workflow_dispatch:
     inputs:
       tag:
         description: 'Git tag to create (e.g. v1.0.0)'
         required: true
-
 jobs:
-  create_release:
+  release:
     name: Create Release
     runs-on: ubuntu-latest
-
     env:
       RELEASE_TAG: ${{ github.event.inputs.tag }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
       - name: Creates tag for release
         run: |
           git config user.name "github-actions"
@@ -26,9 +21,8 @@ jobs:
           git fetch origin
           git tag -f $RELEASE_TAG
           git push -f origin $RELEASE_TAG
-
       - name: Publish container image
         run: |
           docker login -u ${{ secrets.DOCKER_CREDENTIALS_USERNAME }} -p ${{ secrets.DOCKER_CREDENTIALS_PASSWORD }}
-          docker build -t ${{ secrets.DOCKER_NAMESPACE }}/duice-example:latest .
+          docker build -t ${{ vars.DOCKER_NAMESPACE }}/duice-example:${{ RELEASE_TAG }} -t ${{ vars.DOCKER_NAMESPACE }}/duice-example:latest .
           docker push ${{ secrets.DOCKER_NAMESPACE }}/duice-example:latest

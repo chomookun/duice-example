@@ -109,12 +109,11 @@ ul, ol {
 
 /* anchor */
 a {
-  color: inherit;
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 a:hover {
-  text-decoration: underline;
+  text-shadow: 0 0 0.5px var(--duice-color);
 }
 
 /* h1~6 */
@@ -165,6 +164,12 @@ small {
   font-size: smaller;
 }
 
+/* img */
+@media screen and (max-width: 1023px) {
+  img {
+    max-width: 100%;
+  }
+}
 /* input */
 input {
   box-sizing: border-box;
@@ -184,8 +189,8 @@ input:focus {
 }
 
 input:disabled {
-  background-color: rgba(128, 128, 128, 0.1);
-  color: rgba(128, 128, 128, 0.9);
+  background-color: rgba(128, 128, 128, 0.05);
+  color: rgba(128, 128, 128, 0.95);
 }
 
 /* input-checkbox */
@@ -245,8 +250,8 @@ option {
 }
 
 select:disabled {
-  background-color: rgba(128, 128, 128, 0.1);
-  color: rgba(128, 128, 128, 0.9);
+  background-color: rgba(128, 128, 128, 0.05);
+  color: rgba(128, 128, 128, 0.95);
 }
 
 /* button */
@@ -299,8 +304,8 @@ textarea:focus {
 }
 
 textarea:disabled {
-  background-color: rgba(128, 128, 128, 0.1);
-  color: rgba(128, 128, 128, 0.9);
+  background-color: rgba(128, 128, 128, 0.05);
+  color: rgba(128, 128, 128, 0.95);
 }
 
 /* table */
@@ -310,6 +315,13 @@ table {
   border: var(--duice-table-border);
 }
 
+@media screen and (max-width: 1023px) {
+  table {
+    display: inline-block;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+}
 table > thead {
   position: sticky;
   top: 0;
