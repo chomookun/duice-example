@@ -25,5 +25,5 @@ jobs:
         run: |
           docker login -u ${{ secrets.DOCKER_CREDENTIALS_USERNAME }} -p ${{ secrets.DOCKER_CREDENTIALS_PASSWORD }}
           docker build -t ${{ vars.DOCKER_NAMESPACE }}/duice-example:${{ env.RELEASE_TAG }} -t ${{ vars.DOCKER_NAMESPACE }}/duice-example:latest .
-          docker push ${{ secrets.DOCKER_NAMESPACE }}/duice-example:${{ env.RELEASE_TAG }}
-          docker push ${{ secrets.DOCKER_NAMESPACE }}/duice-example:latest
+          docker push ${{ vars.DOCKER_NAMESPACE }}/duice-example:${{ env.RELEASE_TAG }}
+          docker push ${{ vars.DOCKER_NAMESPACE }}/duice-example:latest
