@@ -22,5 +22,5 @@ jobs:
         with:
           region: us-central1
           project_id: ${{ vars.GCP_PROJECT_ID }}
-          service: arch4j-web
+          service: duice-example
           image: docker.io/${{ vars.DOCKER_NAMESPACE }}/duice-example:${{ env.IMAGE_TAG}}
