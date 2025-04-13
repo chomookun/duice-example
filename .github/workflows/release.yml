@@ -7,7 +7,7 @@ on:
         required: true
 jobs:
   release:
-    name: Create Release
+    name: release
     runs-on: ubuntu-latest
     env:
       RELEASE_TAG: ${{ github.event.inputs.tag }}
@@ -27,14 +27,3 @@ jobs:
           docker build -t ${{ vars.DOCKER_NAMESPACE }}/duice-example:${{ env.RELEASE_TAG }} -t ${{ vars.DOCKER_NAMESPACE }}/duice-example:latest .
           docker push ${{ vars.DOCKER_NAMESPACE }}/duice-example:${{ env.RELEASE_TAG }}
           docker push ${{ vars.DOCKER_NAMESPACE }}/duice-example:latest
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-      - name: Deploy to GCP Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v1
-        with:
-          region: us-central1
-          project_id: ${{ vars.GCP_PROJECT_ID }}
-          service: duice-example
-          image: docker.io/${{ vars.DOCKER_NAMESPACE }}/duice-example:${{ env.RELEASE_TAG }}
